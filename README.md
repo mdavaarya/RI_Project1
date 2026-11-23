@@ -76,50 +76,83 @@ Aplikasi telah dilengkapi panel pengujian cepat di pojok kiri bawah layar (**Pan
 
 ## 📝 Catatan Perubahan (Changelog)
 
-Dokumentasi riwayat implementasi fitur dan penyesuaian kebutuhan aplikasi:
+Dokumentasi riwayat implementasi fitur, pembaruan antarmuka, dan perbaikan aplikasi secara bertahap:
 
-### Versi 2.0 (23 November 2026)
-Fokus: Penguatan Kendali Akun dan Integrasi Layanan Helpdesk Internal
+### Versi 2.1 (23 November 2026 — Malam)
+**Fokus Pembaruan:** Tata Letak Navigasi Samping (Sidebar), Menu Hamburger Mobile, dan Pengembalian Beranda Dashboard Utama
+
+- **Pembaruan Navigasi Samping (Sidebar Desktop):**
+  - **Bagian yang diubah:** Memindahkan navigasi menu dari posisi atas (*top bar*) menjadi bilah navigasi samping kiri (*Sidebar*) permanen di layar desktop.
+  - **Alasan perubahan:** Memberikan tata letak yang lebih lapang, ergonomis, dan mempermudah akses cepat ke seluruh modul aplikasi.
+  - **File yang berubah:** `src/components/common/Sidebar.jsx`, `src/App.jsx`
+  - **Hasil pengujian:** Sidebar tampil rapi di sebelah kiri dengan indikator menu aktif dan informasi profil anggota.
+  - **Status:** Selesai (Done)
+
+- **Pembaruan Menu Hamburger (Mobile Navigation):**
+  - **Bagian yang diubah:** Penyediaan bilah atas ramping (*TopNavbar*) khusus perangkat mobile dengan tombol **Menu Hamburger (☰)** yang membuka laci navigasi samping (*slide-over drawer*).
+  - **Alasan perubahan:** Memastikan pengalaman pengguna di perangkat layar kecil/smartphone tetap nyaman tanpa memenuhi layar.
+  - **File yang berubah:** `src/components/common/TopNavbar.jsx`, `src/components/common/Sidebar.jsx`
+  - **Hasil pengujian:** Tombol hamburger berfungsi mulus, membuka drawer navigasi, dan menutup otomatis saat menu dipilih atau backdrop diklik.
+  - **Status:** Selesai (Done)
+
+- **Restrukturisasi Dashboard sebagai Beranda Utama:**
+  - **Bagian yang diubah:** Menetapkan halaman Dashboard sebagai halaman pembuka pertama saat pengguna login, dilengkapi kartu-kartu aksi menuju fitur Helpdesk, Pindah Domisili, dan Pengajuan Hapus Akun.
+  - **Alasan perubahan:** Memenuhi kebutuhan alur kerja di mana pengguna disambut terlebih dahulu di beranda utama untuk memilih layanan yang ingin digunakan.
+  - **File yang berubah:** `src/components/member/MemberDashboard.jsx`, `src/context/AppContext.jsx`, `src/App.jsx`
+  - **Hasil pengujian:** Setelah login, pengguna langsung masuk ke Beranda Utama dan dapat mengklik kartu layanan untuk langsung membuka fitur terkait.
+  - **Status:** Selesai (Done)
+
+- **Penambahan Tombol Breadcrumb Kembali ke Beranda:**
+  - **Bagian yang diubah:** Penambahan tombol *"← Kembali ke Beranda / Dashboard"* pada halaman Helpdesk, Kendali Akun, dan Riwayat Simpanan.
+  - **Alasan perubahan:** Mempermudah pengguna kembali ke halaman utama setelah menyelesaikan aktivitas di modul fitur.
+  - **File yang berubah:** `src/components/account/AccountSettings.jsx`, `src/components/helpdesk/HelpdeskInternal.jsx`, `src/components/member/SavingsHistory.jsx`
+  - **Hasil pengujian:** Tombol kembali berfungsi mengembalikan tampilan langsung ke Dashboard Beranda Utama.
+  - **Status:** Selesai (Done)
+
+---
+
+### Versi 2.0 (23 November 2026 — Sore)
+**Fokus Pembaruan:** Penguatan Kendali Akun, Perpindahan Domisili, Pengajuan Hapus Akun, dan Helpdesk Internal Terintegrasi
 
 - **FR-03 / US-01, US-02: Pengajuan Perubahan Domisili atau Perpindahan Koperasi**
-  - **Bagian yang diubah:** Penambahan modul formulir pengajuan pindah domisili & riwayat status di menu Pengaturan Akun.
+  - **Bagian yang diubah:** Pembuatan formulir pengajuan pembaruan domisili dan mutasi unit koperasi beserta riwayat pemantauan status permohonan.
   - **Alasan perubahan:** Temuan WS1 & WS2 menunjukkan tidak tersedianya fasilitas perpindahan domisili bagi anggota yang berpindah tempat tinggal.
   - **File yang berubah:** `src/components/account/AccountSettings.jsx`, `src/context/AppContext.jsx`, `supabase/schema.sql`
   - **Hasil pengujian:** Form pengajuan berhasil disubmit, tersimpan di riwayat anggota, dan pengurus dapat menyetujui/menolak permohonan.
   - **Status:** Selesai (Done)
 
 - **FR-04 / US-03: Pengajuan Penghapusan Akun & Transparansi Konsekuensi**
-  - **Bagian yang diubah:** Penambahan fitur pengajuan penghapusan akun dengan verifikasi pemahaman konsekuensi hak & retensi kearsipan.
-  - **Alasan perubahan:** Temuan WS1 & WS2 menunjukkan ketiadaan opsi penghapusan akun, sehingga pengguna membutuhkan kendali transparan atas akunnya.
+  - **Bagian yang diubah:** Penyediaan fitur pengajuan penghapusan akun transparan dengan penjelasan konsekuensi hak suara, penyelesaian sisa simpanan, dan aturan retensi kearsipan desa.
+  - **Alasan perubahan:** Temuan WS1 & WS2 menunjukkan ketiadaan opsi penghapusan akun sehingga pengguna membutuhkan kendali transparan atas akunnya.
   - **File yang berubah:** `src/components/account/AccountSettings.jsx`, `src/context/AppContext.jsx`, `supabase/schema.sql`
   - **Hasil pengujian:** Form mewajibkan persetujuan pemahaman konsekuensi dan tercatat di pengurus tanpa penghapusan permanen sepihak.
   - **Status:** Selesai (Done)
 
-- **FR-05 / US-04: Layanan Helpdesk Internal (Ticketing Masuk)**
-  - **Bagian yang diubah:** Pembuatan modul Helpdesk internal berbasis formulir tiket langsung di dalam aplikasi.
-  - **Alasan perubahan:** Temuan WS1 mengidentifikasi alur bantuan sebelumnya yang melempar ke WhatsApp/SMS eksternal sering memicu kendala nomor tidak tersimpan.
+- **FR-05 / US-04: Layanan Helpdesk Internal Langsung di Aplikasi**
+  - **Bagian yang diubah:** Pembuatan sistem tiket laporan kendala di dalam aplikasi dengan nomor tiket otomatis (`HD-2611-xxx`).
+  - **Alasan perubahan:** Temuan WS1 mengidentifikasi alur bantuan sebelumnya yang mengarahkan ke WhatsApp/SMS eksternal sering memicu kendala nomor tidak tersimpan.
   - **File yang berubah:** `src/components/helpdesk/HelpdeskInternal.jsx`, `src/context/AppContext.jsx`, `supabase/schema.sql`
-  - **Hasil pengujian:** Anggota berhasil membuat laporan dengan nomor tiket otomatis (`HD-2611-xxx`) tanpa meninggalkan aplikasi.
+  - **Hasil pengujian:** Anggota berhasil membuat laporan dengan nomor tiket otomatis tanpa perlu meninggalkan aplikasi.
   - **Status:** Selesai (Done)
 
-- **FR-06 / US-05, US-06: Pemantauan Status & Penanganan Tiket Helpdesk**
-  - **Bagian yang diubah:** Penambahan antarmuka pelacakan status tiket bagi anggota dan panel respons penanganan tiket bagi pengurus koperasi.
-  - **Alasan perubahan:** Memastikan anggota dapat memantau status tindak lanjut kendalanya dan pengurus dapat memberikan solusi terpusat.
+- **FR-06 / US-05, US-06: Pelacakan Status & Tindak Lanjut Tiket oleh Pengurus**
+  - **Bagian yang diubah:** Antarmuka pemantauan status tiket bagi anggota (`Dikirim`, `Sedang Ditinjau`, `Sedang Ditangani`, `Selesai`, `Ditolak`) dan panel respons penanganan bagi pengurus.
+  - **Alasan perubahan:** Memastikan anggota dapat memantau status kendalanya secara transparan dan pengurus dapat memberikan solusi terpusat.
   - **File yang berubah:** `src/components/helpdesk/HelpdeskInternal.jsx`, `src/components/admin/PengurusDashboard.jsx`
-  - **Hasil pengujian:** Pengurus dapat memperbarui status tiket (`Sedang Ditangani`, `Selesai`, dll) dan tanggapan langsung terbaca oleh pelapor.
+  - **Hasil pengujian:** Pengurus dapat memperbarui status tiket dan tanggapan/solusi langsung terbaca oleh pelapor.
   - **Status:** Selesai (Done)
 
-- **Scope v2.0: Penyesuaian Ruang Lingkup & Desain Navigasi Samping (Sidebar)**
-  - **Bagian yang diubah:** Rekonstruksi tata letak navigasi dari top navbar menjadi **Sidebar samping** pada desktop dan **menu hamburger** pada layar mobile, serta mengembalikan Dashboard sebagai Beranda Utama dengan kartu-kartu aksi menuju fitur Helpdesk, Pindah Domisili, dan Pengajuan Hapus Akun.
-  - **Alasan perubahan:** Meningkatkan kemudahan akses fitur aplikasi sesuai pola navigasi standar, serta memberikan beranda utama yang jelas untuk mengakses setiap fitur yang dibangun.
-  - **File yang berubah:** `src/components/common/Sidebar.jsx`, `src/components/common/TopNavbar.jsx`, `src/components/member/MemberDashboard.jsx`, `src/App.jsx`, `src/context/AppContext.jsx`
-  - **Hasil pengujian:** Sidebar tampil rapi di sebelah kiri pada desktop, hamburger menu berfungsi responsif di mobile, dan tombol aksi di dashboard mengarahkan pengguna secara presisi ke masing-masing fitur.
+- **Scope v2.0: Penyesuaian Ruang Lingkup Bisnis**
+  - **Bagian yang diubah:** Memusatkan fitur aplikasi pada kendali akun keanggotaan dan helpdesk internal, serta mengeluarkan modul finansial baru dan LMS Corporate University dari cakupan.
+  - **Alasan perubahan:** Mematuhi batasan *Out of Scope* PRD v2.0 poin 9 dan Lampiran C agar implementasi terarah pada permasalahan Design Challenge WS2.
+  - **File yang berubah:** `src/data/initialData.js`, `supabase/schema.sql`
+  - **Hasil pengujian:** Navigasi dan data terfokus pada inti kebutuhan tugas tanpa modul yang tidak berdasar.
   - **Status:** Selesai (Done)
 
 ---
 
-### Versi 1.1 (23 November 2026)
-Fokus: Stabilitas Akses Awal, Kejelasan Login, dan Pemeliharaan Pendaftaran Anggota
+### Versi 1.1 (23 November 2026 — Pagi)
+**Fokus Pembaruan:** Stabilitas Akses Awal, Kejelasan Login, dan Pemeliharaan Pendaftaran Anggota
 
 - **FR-01 / UXR-01: Informasi Kondisi Akses dan Pemulihan**
   - **Bagian yang diubah:** Komponen penanganan error akses saat aplikasi memuat atau jaringan terputus.
@@ -140,4 +173,23 @@ Fokus: Stabilitas Akses Awal, Kejelasan Login, dan Pemeliharaan Pendaftaran Angg
   - **Alasan perubahan:** Mempertahankan ulasan positif pengguna (U3) bahwa proses pendaftaran anggota mudah dan tidak berbelit-belit.
   - **File yang berubah:** `src/components/auth/RegisterForm.jsx`
   - **Hasil pengujian:** Pendaftaran berjalan lancar, menerbitkan nomor anggota sementara, dan status menunggu verifikasi pengurus.
+  - **Status:** Selesai (Done)
+
+---
+
+### Versi 1.0 (23 November 2026 — Awal)
+**Fokus Pembaruan:** Inisialisasi Proyek dan Skema Database Awal
+
+- **Inisialisasi Proyek Web:**
+  - **Bagian yang diubah:** Pengaturan fondasi project React + Vite, integrasi Tailwind CSS, dan Lucide Icons.
+  - **Alasan perubahan:** Memulai pembangunan aplikasi web SIMKOPDES dari nol sesuai *Feature List & Data Model*.
+  - **File yang berubah:** `package.json`, `vite.config.js`, `tailwind.config.js`, `src/main.jsx`
+  - **Hasil pengujian:** Aplikasi dapat terkompilasi dan berjalan normal pada server lokal.
+  - **Status:** Selesai (Done)
+
+- **Penyusunan Skema Database Supabase & RLS:**
+  - **Bagian yang diubah:** Pembuatan skema PostgreSQL Supabase awal dengan kebijakan keamanan Row Level Security (RLS).
+  - **Alasan perubahan:** Menyediakan struktur data yang aman untuk profil anggota, transaksi simpanan, dan audit log (NFR-02 & NFR-03).
+  - **File yang berubah:** `supabase/schema.sql`
+  - **Hasil pengujian:** Skema SQL siap dieksekusi di Supabase dengan RLS dan trigger otomatis.
   - **Status:** Selesai (Done)
