@@ -8,9 +8,9 @@ import { Toast } from './components/common/Toast'
 import { DevToolbar } from './components/common/DevToolbar'
 import { LoginForm } from './components/auth/LoginForm'
 import { RegisterForm } from './components/auth/RegisterForm'
-import { MemberDashboard } from './components/member/MemberDashboard'
+import { AccountSettings } from './components/account/AccountSettings'
+import { HelpdeskInternal } from './components/helpdesk/HelpdeskInternal'
 import { SavingsHistory } from './components/member/SavingsHistory'
-import { MemberProfile } from './components/member/MemberProfile'
 import { PengurusDashboard } from './components/admin/PengurusDashboard'
 
 export default function App() {
@@ -42,9 +42,9 @@ export default function App() {
           <PengurusDashboard />
         ) : (
           <div>
-            {activeTab === 'dashboard' && <MemberDashboard />}
+            {activeTab === 'kendali_akun' && <AccountSettings />}
+            {activeTab === 'helpdesk' && <HelpdeskInternal />}
             {activeTab === 'simpanan' && <SavingsHistory />}
-            {activeTab === 'profil' && <MemberProfile />}
           </div>
         )}
       </main>

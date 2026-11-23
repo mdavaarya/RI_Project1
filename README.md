@@ -1,20 +1,39 @@
 # SIMKOPDES — Sistem Informasi Manajemen Koperasi Desa
 
-Aplikasi web layanan koperasi desa yang dibangun berdasarkan **PRD v1.1** dan dokumen pendamping **SIMKOPDES Feature List & Data Model**. Fokus utama pengembangan adalah perbaikan pengalaman pengguna (UX) terhadap kendala akses dan proses masuk, sambil mempertahankan kemudahan pendaftaran dan fitur simpanan yang telah dinilai positif.
+### Penguatan Kendali Akun dan Integrasi Layanan Helpdesk (PRD v2.0)
+
+Aplikasi web layanan koperasi desa yang dibangun berdasarkan **PRD SIMKOPDES v2.0** (berdasarkan sintesis Worksheet WS1, WS2, WS3, WS5, WS6, WS7, dan WS8). Fokus utama pembaruan ini adalah memberikan kendali yang fleksibel kepada anggota terhadap akun dan data keanggotaannya (perubahan domisili & penghapusan akun) serta menyediakan layanan bantuan **Helpdesk internal terintegrasi di dalam aplikasi** tanpa perlu beralih ke WhatsApp atau SMS.
 
 ---
 
-## 🛠️ Tech Stack yang Ditetapkan
-- **Frontend:** React 18 + Vite
+## 📑 Catatan Perubahan (Changelog Repository & PRD)
+
+Sesuai instruksi dan format standar dokumentasi perubahan (*PRD Lampiran C*), berikut adalah catatan lengkap seluruh perubahan implementasi yang dilakukan:
+
+| Versi PRD | Requirement Terkait | Bagian yang Diubah | Alasan Perubahan (Dasar Masalah) | File yang Berubah | Hasil Pengujian | Status |
+|---|---|---|---|---|---|---|
+| **v1.1** | **FR-01 / UXR-01** | Modul Akses & State Kegagalan | Menangani laporan pengguna yang gagal membuka aplikasi (U1). Menyediakan pesan ramah non-teknis tanpa bocoran stack trace mentah, tombol *Retry*, dan hotline resmi. | `src/components/common/ErrorState.jsx` | Berhasil menangani status offline dan gangguan jaringan dengan simulasi retry normal. | **Done** |
+| **v1.1** | **FR-02 / UXR-02** | Modul Login & Autentikasi | Menangani temuan U2 (login merepotkan). Menyediakan input fleksibel Nomor Anggota/Email, validasi *inline real-time*, pesan error actionable, dan toggle lihat sandi. | `src/components/auth/LoginForm.jsx` | Berhasil memvalidasi login, mendeteksi akun pending/salah kata sandi, dan autofill akun demo. | **Done** |
+| **v1.1** | **FR-07** | Pendaftaran Anggota Baru | Mempertahankan pengalaman pendaftaran anggota yang dinilai mudah (U3) tanpa menambah syarat data yang memberatkan. | `src/components/auth/RegisterForm.jsx` | Berhasil mendaftarkan anggota dengan nomor anggota sementara dan status menunggu verifikasi. | **Done** |
+| **v2.0** | **FR-03 / US-01, US-02** | Pengaturan Akun: Perubahan Domisili & Perpindahan Koperasi | Temuan WS1 & WS2: Tidak ada opsi perpindahan domisili saat anggota pindah tempat tinggal. Fitur ini memungkinkan anggota mengajukan alamat baru/koperasi tujuan tanpa kehilangan riwayat akun. | `src/components/account/AccountSettings.jsx`<br>`src/context/AppContext.jsx`<br>`supabase/schema.sql` | Form berhasil disubmit, tercatat di riwayat anggota, dan pengurus dapat menyetujui/menolak permohonan. | **Done** |
+| **v2.0** | **FR-04 / US-03** | Pengaturan Akun: Pengajuan Penghapusan Akun | Temuan WS1 & WS2: Tidak tersedianya opsi penghapusan akun. Sistem kini menyediakan mekanisme pengajuan transparan dengan penjelasan konsekuensi hak & retensi data kearsipan desa. | `src/components/account/AccountSettings.jsx`<br>`src/context/AppContext.jsx`<br>`supabase/schema.sql` | Form meminta persetujuan konsekuensi, tercatat di sistem pengurus, dan tidak langsung melakukan *hard delete* data keuangan. | **Done** |
+| **v2.0** | **FR-05 / US-04** | Layanan Helpdesk Internal (Ticketing Masuk) | Temuan WS1: Kontak bantuan sebelumnya melempar ke WhatsApp/SMS eksternal yang sering gagal. Sekarang anggota dapat mengirim laporan kendala langsung di aplikasi. | `src/components/helpdesk/HelpdeskInternal.jsx`<br>`src/context/AppContext.jsx`<br>`supabase/schema.sql` | Anggota berhasil membuat tiket kendala dengan nomor tiket unik otomatis (`HD-2611-xxx`). | **Done** |
+| **v2.0** | **FR-06 / US-05, US-06** | Pemantauan & Penanganan Tiket Helpdesk | Memungkinkan anggota memantau perkembangan laporan (`Dikirim`, `Sedang Ditinjau`, `Sedang Ditangani`, `Selesai`, `Ditolak`) dan membaca tanggapan resmi pengurus di aplikasi. | `src/components/helpdesk/HelpdeskInternal.jsx`<br>`src/components/admin/PengurusDashboard.jsx` | Status tiket dapat diubah oleh pengurus disertai tanggapan solusi yang langsung tampil di akun anggota. | **Done** |
+| **v2.0** | **Scope v2.0** | Penyesuaian Ruang Lingkup Bisnis | Mengikuti batasan *Out of Scope* PRD v2.0 poin 9 & Lampiran C: Modul finansial baru tidak dibuat; fokus diarahkan penuh pada kendali akun keanggotaan dan Helpdesk internal. | `src/components/common/Header.jsx`<br>`src/App.jsx`<br>`src/data/initialData.js` | Navigasi aplikasi berfokus pada Kendali Akun, Layanan Helpdesk, dan Operasional Pengurus. | **Done** |
+
+---
+
+## 🛠️ Arsitektur & Tech Stack
+- **Frontend Framework:** React 18 + Vite
 - **Styling:** Tailwind CSS + Lucide Icons
-- **Backend / Database:** Supabase (Postgres + Auth + API) + Skema RLS
-- **Mode Dual-Engine:** Mendukung koneksi live Supabase maupun *Interactive Demo Store* lokal dengan data awal realistis sehingga siap diuji kapan saja tanpa dependensi jaringan.
+- **Database & Auth Schema:** Supabase (PostgreSQL + RLS + Auto Trigger)
+- **Engine Operasional:** Mendukung koneksi live Supabase dan *Interactive Local Store* dengan data realistis KUD Sukamaju untuk mempermudah evaluasi dan pengujian dosen.
 
 ---
 
 ## 🚀 Cara Menjalankan Aplikasi
 
-1. **Pastikan Node.js terpasang** (versi 18+ disarankan).
+1. **Pastikan Node.js terpasang** di komputer Anda (versi 18+).
 2. **Install dependensi:**
    ```bash
    npm install
@@ -23,9 +42,9 @@ Aplikasi web layanan koperasi desa yang dibangun berdasarkan **PRD v1.1** dan do
    ```bash
    npm run dev
    ```
-4. Buka peramban di `http://localhost:5173`.
+4. Buka alamat **`http://localhost:5173`** pada peramban web.
 
-Untuk build produksi:
+Untuk build kompilasi produksi:
 ```bash
 npm run build
 npm run preview
@@ -33,41 +52,27 @@ npm run preview
 
 ---
 
-## 📋 Pemetaan Fitur ke PRD & Acceptance Criteria
+## 🧪 Panduan Pengujian untuk Dosen / Penilai (DevToolbar)
 
-| ID PRD | Fitur & Implementasi | Acceptance Ref |
-|---|---|---|
-| **FR-01 / UXR-01** (High) | **Informasi Kondisi Akses & Pemulihan**<br>• Tampilan ramah non-teknis saat gangguan jaringan/server.<br>• Tidak menampilkan *raw stack trace* / kode error teknis mentah (NFR-03 & NFR-05).<br>• Tombol aksi *Coba Hubungkan Ulang* (Retry Action).<br>• Kanal bantuan resmi KUD Sukamaju (WhatsApp, Telepon kantor, Email). | AC-1, AC-2 |
-| **FR-02 / UXR-02** (High) | **Kejelasan Proses Login**<br>• Input fleksibel: Nomor Anggota (KOP-xxxx-xxxx) atau Email.<br>• Label berbahasa Indonesia yang jelas.<br>• Validasi *real-time inline* saat mengetik.<br>• Pesan error spesifik & berorientasi tindakan (bukan sekadar "Error").<br>• Fitur Show/Hide Password & dialog pemulihan Lupa Sandi. | AC-3, AC-4 |
-| **FR-03 / UXR-03** (Low - Pertahankan) | **Kemudahan Pendaftaran Anggota**<br>• Formulir ringkas dan minimal (Nama, NIK 16 digit, No. HP, Alamat, Email, Sandi).<br>• Tidak menambah langkah/biaya baru yang membingungkan.<br>• Layar konfirmasi pendaftaran dengan nomor anggota sementara. | AC-5 |
-| **FR-04 / UXR-04** (Low - Pertahankan) | **Kemudahan Fitur Utama Anggota**<br>• Dashboard ringkasan Simpanan Pokok, Wajib, dan Sukarela.<br>• Riwayat transaksi simpanan transparan dengan filter & pencarian.<br>• Empty state yang ramah dan instruktif.<br>• Pengaturan profil data kontak. | AC-6 |
-| **FR-05 / UXR-05** (Medium) | **Panduan & Navigasi Mudah**<br>• Tombol Pusat Bantuan & Petunjuk (? Bantuan) di header dan setiap form.<br>• Modal FAQ kontekstual dengan pencarian dan kategori.<br>• Istilah non-teknis yang mudah dimengerti warga desa. | AC-7 |
-| **US-05** | **Modul Khusus Pengurus Desa**<br>• Ringkasan jumlah anggota & total kas kasir desa.<br>• Persetujuan pendaftaran anggota baru (1-click Approve).<br>• Pencatatan setoran simpanan warga secara langsung.<br>• Tab khusus *"Panduan Pengurus Baru"* langkah-demi-langkah bagi pengurus yang masih belajar teknologi. | US-05 |
+Aplikasi dilengkapi panel pengujian melayang di pojok kiri bawah (**Panel Penguji PRD v2.0**):
 
----
-
-## 🧪 Panel Penguji PRD & Evaluasi UX (DevToolbar)
-
-Di pojok kiri bawah layar aplikasi terdapat **"Panel Penguji PRD & UX"** yang disediakan untuk mempermudah dosen/penilai menguji skenario PRD:
-1. **Uji FR-01:** Klik *Simulasi Server Down*, *Simulasi Jaringan Sibuk*, atau *Simulasi Mode Offline* untuk melihat respon penanganan kegagalan akses dan tombol pemulihan.
-2. **Uji Peran Pengguna (US-02, US-03, US-05):** Berpindah langsung antara:
-   - **Budi Santoso:** Anggota aktif resmi (melihat dashboard simpanan).
-   - **Agus Salim:** Calon anggota status pending (menguji alur verifikasi).
-   - **Pak Joko (Ketua):** Pengurus koperasi (menguji persetujuan anggota & pencatatan kas).
-3. **Uji NFR-03 (Audit Log):** Membuka rekaman log audit keamanan secara *real-time* tanpa kebocoran data sensitif.
+1. **Uji FR-03 (Pindah Domisili):** Masuk sebagai Budi Santoso (Anggota), buka menu *Kendali Akun & Domisili*, ajukan alamat baru. Kemudian beralih ke akun Pak Joko (Pengurus) untuk meninjau dan menyetujui permohonan tersebut.
+2. **Uji FR-04 (Hapus Akun):** Buka tab *Pengajuan Hapus Akun*, baca poin konsekuensi retensi data, centang konfirmasi, dan kirim. Status permohonan akan terverifikasi secara transparan.
+3. **Uji FR-05 & FR-06 (Helpdesk Internal):** Buka menu *Helpdesk Internal*, kirim laporan baru. Beralih ke Pengurus untuk membalas dan mengubah status menjadi *Sedang Ditangani* atau *Selesai*.
+4. **Uji FR-01 (Kegagalan Akses):** Tekan *Simulasi Server Down* pada panel penguji untuk melihat respons penanganan error non-teknis, lalu tekan *Reset ke Normal*.
+5. **Uji NFR-02 & NFR-03 (Keandalan & Audit Log):** Buka tautan *Lihat Audit Log* pada panel penguji untuk melihat riwayat aktivitas sistem secara real-time.
 
 ---
 
-## 🗄️ Skema Database Supabase (Postgres & RLS)
+## 🗄️ Skema Database Supabase
 
-File skema lengkap tersedia di:
+Berkas skema lengkap dengan RLS (Row Level Security) siap pakai tersedia di:
 [`supabase/schema.sql`](file:///c:/Users/davaa/Documents/TUGAS%20KAMPUS/RI/Project%201/supabase/schema.sql)
 
-Struktur tabel:
-1. `profiles` — Terhubung 1-1 ke `auth.users`, menyimpan nama, no HP, role (`anggota`, `pengurus`, `calon_anggota`).
-2. `anggota` — Menyimpan Nomor Anggota unik, NIK 16 digit, alamat domisili desa, status (`pending`, `aktif`, `nonaktif`).
-3. `simpanan` — Transaksi setoran simpanan (`pokok`, `wajib`, `sukarela`).
-4. `pinjaman` — Placeholder pengajuan pinjaman usaha produktif.
-5. `help_content` — Data konten panduan dan petunjuk FAQ.
-6. `audit_log` — Catatan aktivitas sistem untuk kepatuhan dan keandalan (NFR-03).
-7. Row Level Security (RLS) policies aktif pada seluruh tabel untuk melindungi privasi data warga.
+Tabel skema:
+1. `profiles`: Profil anggota dan peran pengguna (`anggota`, `pengurus`).
+2. `anggota`: Data nomor anggota, NIK, dan status keanggotaan.
+3. `permohonan_domisili`: Data pengajuan perpindahan domisili / koperasi (FR-03).
+4. `pengajuan_hapus_akun`: Data pengajuan penghapusan akun dan persetujuan konsekuensi (FR-04).
+5. `helpdesk_tiket`: Tiket kendala bantuan internal dan tanggapan pengurus (FR-05 & FR-06).
+6. `audit_log`: Catatan audit aktivitas sistem untuk keandalan dan kepatuhan.

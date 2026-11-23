@@ -1,5 +1,5 @@
 // Data inisial realistis untuk Koperasi Desa 'KUD Sukamaju'
-// Digunakan sebagai state awal dan fallback mock mode jika Supabase belum dihubungkan.
+// Diperbarui sesuai PRD v2.0 (Kendali Akun, Perpindahan Domisili, Hapus Akun, Helpdesk Internal)
 
 export const initialProfiles = [
   {
@@ -11,6 +11,7 @@ export const initialProfiles = [
     nomor_anggota: 'KOP-2601-0089',
     nik: '3201011508850001',
     alamat: 'Dusun Sukatani RT 02 / RW 01, Desa Sukamaju',
+    koperasi_asal: 'KUD Sukamaju',
     status: 'aktif',
     tanggal_daftar: '2025-01-15T08:00:00Z',
   },
@@ -23,6 +24,7 @@ export const initialProfiles = [
     nomor_anggota: 'KOP-2602-0104',
     nik: '3201015206900003',
     alamat: 'Dusun Karanganyar RT 01 / RW 03, Desa Sukamaju',
+    koperasi_asal: 'KUD Sukamaju',
     status: 'aktif',
     tanggal_daftar: '2025-02-10T09:30:00Z',
   },
@@ -35,6 +37,7 @@ export const initialProfiles = [
     nomor_anggota: 'KOP-2611-0199',
     nik: '3201011103980002',
     alamat: 'Dusun Sukamukti RT 04 / RW 02, Desa Sukamaju',
+    koperasi_asal: 'KUD Sukamaju',
     status: 'pending',
     tanggal_daftar: '2026-11-20T14:15:00Z',
   },
@@ -47,8 +50,74 @@ export const initialProfiles = [
     nomor_anggota: 'KOP-PENGURUS-01',
     nik: '3201010101700001',
     alamat: 'Kantor Balai Desa Sukamaju Lt. 2',
+    koperasi_asal: 'KUD Sukamaju',
     status: 'aktif',
     tanggal_daftar: '2024-01-01T00:00:00Z',
+  }
+];
+
+// FR-03 / US-01: Permohonan Perubahan Domisili atau Perpindahan Koperasi
+export const initialDomicileRequests = [
+  {
+    id: 'dom-001',
+    profile_id: 'user-001',
+    nama_pemohon: 'Budi Santoso',
+    nomor_anggota: 'KOP-2601-0089',
+    alamat_lama: 'Dusun Sukatani RT 02 / RW 01, Desa Sukamaju',
+    alamat_baru: 'Jl. Merak No. 14 RT 03 / RW 05, Desa Sukamukti, Kec. Sukatani',
+    koperasi_asal: 'KUD Sukamaju',
+    koperasi_tujuan: 'KUD Sukamukti Mandiri',
+    alasan: 'Pindah tempat tinggal karena mutasi kerja ke pabrik wilayah Sukamukti',
+    status: 'ditinjau', // 'dikirim' | 'ditinjau' | 'disetujui' | 'ditolak'
+    catatan_pengurus: 'Sedang diverifikasi dengan pihak RT/RW desa tujuan',
+    created_at: '2026-11-21T10:30:00Z',
+    updated_at: '2026-11-22T08:15:00Z'
+  }
+];
+
+// FR-04 / US-03: Pengajuan Penghapusan Akun
+export const initialDeletionRequests = [
+  {
+    id: 'del-001',
+    profile_id: 'user-002',
+    nama_pemohon: 'Siti Aminah',
+    nomor_anggota: 'KOP-2602-0104',
+    alasan: 'Sudah tidak berdomisili di wilayah Jawa Barat dan ingin menutup rekening keanggotaan',
+    konfirmasi_konsekuensi: true,
+    status: 'dikirim', // 'dikirim' | 'ditinjau' | 'disetujui' | 'ditolak'
+    catatan_pengurus: 'Menunggu peninjauan penarikan simpanan pokok dan wajib',
+    created_at: '2026-11-22T14:00:00Z',
+    updated_at: '2026-11-22T14:00:00Z'
+  }
+];
+
+// FR-05 & FR-06 / US-04, US-05, US-06: Helpdesk Internal
+export const initialHelpdeskTickets = [
+  {
+    id: 'tik-001',
+    nomor_tiket: 'HD-2611-001',
+    profile_id: 'user-001',
+    nama_pelapor: 'Budi Santoso',
+    kategori: 'akses_login',
+    judul: 'Aplikasi sempat lambat saat login di ponsel Android',
+    deskripsi: 'Saat membuka aplikasi tadi pagi setelah pembaruan, proses login memakan waktu sekitar 15 detik sebelum masuk ke dashboard.',
+    status: 'ditangani', // 'dikirim' | 'ditinjau' | 'ditangani' | 'selesai' | 'ditolak'
+    tanggapan_pengurus: 'Halo Pak Budi, terima kasih laporannya. Kami sedang mengoptimalkan cache server desa agar proses login lebih cepat.',
+    created_at: '2026-11-23T08:30:00Z',
+    updated_at: '2026-11-23T09:10:00Z'
+  },
+  {
+    id: 'tik-002',
+    nomor_tiket: 'HD-2611-002',
+    profile_id: 'user-002',
+    nama_pelapor: 'Siti Aminah',
+    kategori: 'keanggotaan',
+    judul: 'Konfirmasi pembaruan alamat domisili RT/RW',
+    deskripsi: 'Apakah pengajuan pindah domisili saya sudah mulai diproses oleh pengurus koperasi?',
+    status: 'selesai',
+    tanggapan_pengurus: 'Data pengajuan Ibu Siti Aminah sudah kami terima dan tercatat di sistem balai desa. Terima kasih.',
+    created_at: '2026-11-20T11:00:00Z',
+    updated_at: '2026-11-21T13:45:00Z'
   }
 ];
 
@@ -67,66 +136,9 @@ export const initialSavings = [
     anggota_id: 'user-001',
     jenis: 'wajib',
     nominal: 50000,
-    tanggal_transaksi: '2026-09-05T10:00:00Z',
-    keterangan: 'Simpanan Wajib Bulan September 2026',
-    status: 'sukses',
-  },
-  {
-    id: 'sav-103',
-    anggota_id: 'user-001',
-    jenis: 'wajib',
-    nominal: 50000,
-    tanggal_transaksi: '2026-10-05T09:15:00Z',
-    keterangan: 'Simpanan Wajib Bulan Oktober 2026',
-    status: 'sukses',
-  },
-  {
-    id: 'sav-104',
-    anggota_id: 'user-001',
-    jenis: 'wajib',
-    nominal: 50000,
     tanggal_transaksi: '2026-11-05T11:00:00Z',
     keterangan: 'Simpanan Wajib Bulan November 2026',
     status: 'sukses',
-  },
-  {
-    id: 'sav-105',
-    anggota_id: 'user-001',
-    jenis: 'sukarela',
-    nominal: 350000,
-    tanggal_transaksi: '2026-11-12T13:45:00Z',
-    keterangan: 'Setoran hasil panen padi',
-    status: 'sukses',
-  },
-  {
-    id: 'sav-106',
-    anggota_id: 'user-002',
-    jenis: 'pokok',
-    nominal: 100000,
-    tanggal_transaksi: '2025-02-10T10:00:00Z',
-    keterangan: 'Simpanan Pokok awal keanggotaan',
-    status: 'sukses',
-  },
-  {
-    id: 'sav-107',
-    anggota_id: 'user-002',
-    jenis: 'wajib',
-    nominal: 50000,
-    tanggal_transaksi: '2026-11-02T08:30:00Z',
-    keterangan: 'Simpanan Wajib Bulan November 2026',
-    status: 'sukses',
-  }
-];
-
-export const initialLoans = [
-  {
-    id: 'loan-201',
-    anggota_id: 'user-001',
-    jumlah_pengajuan: 2500000,
-    keperluan: 'Beli pupuk dan bibit jagung',
-    status: 'disetujui',
-    tanggal_pengajuan: '2026-08-15T10:00:00Z',
-    keterangan: 'Disetujui tempo 6 bulan, angsuran berjalan lancar',
   }
 ];
 
@@ -139,46 +151,25 @@ export const initialHelpContent = [
     ringkas: 'Gunakan email terdaftar jika nomor anggota tidak diingat.'
   },
   {
-    id: 'help-2',
-    kategori: 'login',
-    judul: 'Mengapa muncul pesan "Nomor Anggota/Email tidak terdaftar"?',
-    konten: 'Pastikan format penulisan sudah sesuai (contoh: KOP-2601-0089 atau nama@email.com). Jika baru mendaftar, pastikan formulir pendaftaran sudah berhasil disubmit.',
-    ringkas: 'Periksa ejaan atau daftar akun baru bila belum pernah terdaftar.'
+    id: 'help-domisili',
+    kategori: 'keanggotaan',
+    judul: 'Bagaimana alur mengajukan perpindahan domisili atau koperasi?',
+    konten: 'Buka menu "Pengaturan Akun", pilih tab "Pindah Domisili/Koperasi". Isi alamat baru dan alasan kepindahan. Data keanggotaan dan riwayat Anda tidak akan hilang.',
+    ringkas: 'Ajukan melalui menu Pengaturan Akun tanpa membuat akun baru.'
   },
   {
-    id: 'help-3',
-    kategori: 'pendaftaran',
-    judul: 'Apa saja syarat mendaftar anggota koperasi desa?',
-    konten: 'Cukup menyiapkan: 1. NIK (16 digit sesuai e-KTP), 2. Nama Lengkap, 3. Nomor Handphone aktif (bisa WhatsApp), 4. Alamat domisili di desa. Tidak dipungut biaya formulir pendaftaran.',
-    ringkas: 'Hanya butuh NIK, Nama, No. HP, dan Alamat.'
+    id: 'help-hapus',
+    kategori: 'keanggotaan',
+    judul: 'Bagaimana ketentuan pengajuan penghapusan akun?',
+    konten: 'Pengajuan penghapusan akun dilakukan melalui menu "Pengaturan Akun > Hapus Akun". Sistem tidak otomatis langsung menghapus data permanen demi mematuhi ketentuan retensi data koperasi. Pengurus akan meninjau dan menyelesaikan hak simpanan Anda.',
+    ringkas: 'Ajukan melalui Pengaturan Akun, pengurus akan meninjau sesuai kebijakan koperasi.'
   },
   {
-    id: 'help-4',
-    kategori: 'pendaftaran',
-    judul: 'Berapa lama status verifikasi pendaftaran anggota?',
-    konten: 'Pengurus koperasi memverifikasi data pendaftar dalam 1x24 jam pada hari kerja. Anda dapat memantau status secara langsung di halaman dashboard.',
-    ringkas: 'Verifikasi maksimal 1x24 jam kerja oleh pengurus.'
-  },
-  {
-    id: 'help-5',
-    kategori: 'simpanan',
-    judul: 'Apa perbedaan Simpanan Pokok, Wajib, dan Sukarela?',
-    konten: '• Simpanan Pokok: Disetor sekali saat menjadi anggota (Rp 100.000) dan tidak dapat ditarik selama masih menjadi anggota.\n• Simpanan Wajib: Disetor rutin setiap bulan (Rp 50.000).\n• Simpanan Sukarela: Tabungan bebas yang dapat disetor atau ditarik kapan saja.',
-    ringkas: 'Pokok = 1 kali di awal; Wajib = per bulan; Sukarela = tabungan bebas.'
-  },
-  {
-    id: 'help-6',
-    kategori: 'pengurus',
-    judul: 'Panduan Praktis Pengurus: Cara Menyetujui Anggota Baru',
-    konten: 'Buka menu "Kelola Anggota", pilih tab "Menunggu Verifikasi", lalu periksa kesesuaian data NIK dan domisili calon anggota. Klik tombol hijau "Setujui Anggota" untuk mengaktifkan.',
-    ringkas: 'Pilih calon anggota di tab Menunggu, lalu klik Setujui.'
-  },
-  {
-    id: 'help-7',
-    kategori: 'pengurus',
-    judul: 'Panduan Praktis Pengurus: Mencatat Setoran Simpanan Warga',
-    konten: 'Buka menu "Catat Simpanan", pilih nama warga/nomor anggota, pilih jenis simpanan (Wajib/Sukarela), masukkan nominal rupiah yang diterima, dan simpan. Kwitansi otomatis tercatat.',
-    ringkas: 'Buka Catat Simpanan, pilih anggota, isi nominal, lalu klik Simpan.'
+    id: 'help-helpdesk',
+    kategori: 'helpdesk',
+    judul: 'Bagaimana cara menyampaikan kendala melalui Helpdesk Internal?',
+    konten: 'Pilih menu "Helpdesk Internal", klik "Buat Tiket Laporan Baru", pilih kategori kendala, dan jelaskan permasalahan Anda. Anda dapat memantau status tindak lanjut pengurus secara langsung di dalam aplikasi tanpa perlu pindah ke WhatsApp atau SMS.',
+    ringkas: 'Kirim laporan langsung di aplikasi dan pantau statusnya kapan saja.'
   }
 ];
 

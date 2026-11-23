@@ -7,21 +7,13 @@ import {
   CheckCircle, 
   Database, 
   FileText, 
-  X,
-  RefreshCw,
-  ExternalLink,
-  ChevronUp,
-  ChevronDown
+  X, 
+  ChevronUp, 
+  ChevronDown,
+  LifeBuoy,
+  Settings
 } from 'lucide-react'
 
-/**
- * DevToolbar:
- * Menyediakan kontrol uji cepat bagi dosen/evaluator untuk memverifikasi PRD:
- * 1. Uji FR-01: Simulasi Akses Gagal (Server down, Gangguan Jaringan, Offline)
- * 2. Uji FR-02: Beralih pengguna langsung (Anggota aktif, Calon anggota pending, Pengurus)
- * 3. Uji NFR-03 & Reliability: Melihat Audit Log real-time
- * 4. Status Supabase & Database Schema
- */
 export const DevToolbar = () => {
   const { 
     currentUser, 
@@ -31,7 +23,8 @@ export const DevToolbar = () => {
     simulateConnectionError, 
     resetConnection,
     auditLogs,
-    isSupabaseConfigured
+    isSupabaseConfigured,
+    setActiveTab
   } = useApp()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -39,8 +32,7 @@ export const DevToolbar = () => {
 
   return (
     <>
-      {/* Floating Toolbar Pill */}
-      <aside aria-label="Panel Evaluasi UX" className="fixed bottom-3 left-3 sm:left-6 z-40">
+      <aside aria-label="Panel Evaluasi UX PRD v2.0" className="fixed bottom-3 left-3 sm:left-6 z-40">
         <div className="bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700 overflow-hidden text-xs">
           <div 
             onClick={() => setIsOpen(!isOpen)} 
@@ -49,7 +41,7 @@ export const DevToolbar = () => {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
               <Wrench className="w-4 h-4 text-emerald-400" />
-              <span className="font-semibold text-slate-200">Panel Penguji PRD & UX</span>
+              <span className="font-semibold text-slate-200">Panel Penguji PRD v2.0</span>
             </div>
 
             <div className="flex items-center gap-2 text-[11px] text-slate-400 border-l border-slate-700 pl-3">
@@ -64,13 +56,35 @@ export const DevToolbar = () => {
             {isOpen ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronUp className="w-4 h-4 text-slate-400" />}
           </div>
 
-          {/* Expanded Drawer */}
           {isOpen && (
             <div className="p-4 border-t border-slate-800 bg-slate-950/95 space-y-4 max-w-md w-full">
+              {/* Uji Navigasi Cepat PRD v2.0 */}
+              <div>
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
+                  Navigasi Cepat Fitur PRD v2.0:
+                </label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => setActiveTab('kendali_akun')}
+                    className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] flex items-center gap-1"
+                  >
+                    <Settings className="w-3 h-3 text-emerald-400" />
+                    <span>Pindah Domisili & Hapus Akun</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('helpdesk')}
+                    className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] flex items-center gap-1"
+                  >
+                    <LifeBuoy className="w-3 h-3 text-emerald-400" />
+                    <span>Helpdesk Internal</span>
+                  </button>
+                </div>
+              </div>
+
               {/* FR-01: Simulasi Gangguan Akses */}
               <div>
                 <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
-                  1. Uji FR-01 / UXR-01 (Kegagalan Akses & Recovery):
+                  Uji FR-01 (Kegagalan Akses & Recovery):
                 </label>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
@@ -84,26 +98,6 @@ export const DevToolbar = () => {
                     Simulasi Server Down
                   </button>
                   <button
-                    onClick={() => simulateConnectionError('network_error')}
-                    className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
-                      simulatedError === 'network_error'
-                        ? 'bg-amber-700 text-white border-amber-500'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
-                    }`}
-                  >
-                    Simulasi Jaringan Sibuk
-                  </button>
-                  <button
-                    onClick={() => simulateConnectionError('offline')}
-                    className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
-                      simulatedError === 'offline'
-                        ? 'bg-orange-700 text-white border-orange-500'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
-                    }`}
-                  >
-                    Simulasi Mode Offline
-                  </button>
-                  <button
                     onClick={resetConnection}
                     className="px-2.5 py-1.5 rounded-lg border bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 border-emerald-600 text-[11px] font-medium transition-colors flex items-center justify-center gap-1"
                   >
@@ -113,10 +107,10 @@ export const DevToolbar = () => {
                 </div>
               </div>
 
-              {/* Ganti Pengguna Cepat */}
+              {/* Beralih Peran Pengguna */}
               <div>
                 <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
-                  2. Beralih Peran Pengguna (US-02, US-03, US-05):
+                  Beralih Peran Pengguna:
                 </label>
                 <div className="space-y-1">
                   {profiles.slice(0, 4).map((p) => {
@@ -165,14 +159,14 @@ export const DevToolbar = () => {
         </div>
       </aside>
 
-      {/* Audit Log Modal (NFR-03 & Reliability) */}
+      {/* Audit Log Modal */}
       {showAuditModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-bold text-sm">Catatan Audit Sistem (Audit Log — NFR-03)</h3>
+                <h3 className="font-bold text-sm">Catatan Audit Sistem (Audit Log — NFR-02 & NFR-03)</h3>
               </div>
               <button
                 onClick={() => setShowAuditModal(false)}
@@ -183,9 +177,6 @@ export const DevToolbar = () => {
             </div>
 
             <div className="p-4 overflow-y-auto space-y-2 text-xs flex-1">
-              <p className="text-slate-500 text-[11px] mb-3">
-                Mencatat aktivitas penting (login, pendaftaran, persetujuan pengurus, transaksi) tanpa membocorkan kata sandi atau data sensitif mentah sesuai NFR-03 & NFR-05.
-              </p>
               {auditLogs.map((log) => (
                 <div key={log.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                   <div className="flex items-center justify-between text-slate-800">

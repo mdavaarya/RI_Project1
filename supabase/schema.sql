@@ -1,6 +1,7 @@
 -- ==============================================================
 -- SIMKOPDES Database Schema & RLS Policies (Supabase Postgres)
--- Dokumen Pendamping PRD v1.1 SIMKOPDES
+-- Dokumen PRD v2.0 SIMKOPDES:
+-- Penguatan Kendali Akun dan Integrasi Layanan Helpdesk
 -- ==============================================================
 
 -- Enable UUID extension if not already enabled
@@ -23,11 +24,52 @@ create table if not exists public.anggota (
   nomor_anggota text unique,
   nik varchar(16) not null,
   alamat text,
-  status text not null check (status in ('pending', 'aktif', 'nonaktif')) default 'pending',
+  status text not null check (status in ('pending', 'aktif', 'nonaktif', 'menunggu_penghapusan', 'pindah')) default 'pending',
   tanggal_daftar timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 3. SIMPANAN TABLE (Transaksi Simpanan Anggota)
+-- 3. PERMOHONAN_DOMISILI TABLE (FR-03 / US-01: Perpindahan Domisili / Koperasi)
+create table if not exists public.permohonan_domisili (
+  id uuid default uuid_generate_v4() primary key,
+  profile_id uuid references public.profiles(id) on delete cascade not null,
+  alamat_lama text not null,
+  alamat_baru text not null,
+  koperasi_asal text not null default 'KUD Sukamaju',
+  koperasi_tujuan text,
+  alasan text not null,
+  status text not null check (status in ('dikirim', 'ditinjau', 'disetujui', 'ditolak')) default 'dikirim',
+  catatan_pengurus text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 4. PENGAJUAN_HAPUS_AKUN TABLE (FR-04 / US-03: Pengajuan Penghapusan Akun)
+create table if not exists public.pengajuan_hapus_akun (
+  id uuid default uuid_generate_v4() primary key,
+  profile_id uuid references public.profiles(id) on delete cascade not null,
+  alasan text not null,
+  konfirmasi_konsekuensi boolean not null default false,
+  status text not null check (status in ('dikirim', 'ditinjau', 'disetujui', 'ditolak')) default 'dikirim',
+  catatan_pengurus text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 5. HELPDESK_TIKET TABLE (FR-05 & FR-06 / US-04, US-05, US-06: Helpdesk Internal)
+create table if not exists public.helpdesk_tiket (
+  id uuid default uuid_generate_v4() primary key,
+  nomor_tiket text not null unique,
+  profile_id uuid references public.profiles(id) on delete cascade not null,
+  kategori text not null check (kategori in ('akses_login', 'keanggotaan', 'teknis', 'layanan_desa', 'lainnya')),
+  judul text not null,
+  deskripsi text not null,
+  status text not null check (status in ('dikirim', 'ditinjau', 'ditangani', 'selesai', 'ditolak')) default 'dikirim',
+  tanggapan_pengurus text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 6. SIMPANAN TABLE (Data pendukung simpanan anggota yang sudah tercatat)
 create table if not exists public.simpanan (
   id uuid default uuid_generate_v4() primary key,
   anggota_id uuid references public.anggota(id) on delete cascade not null,
@@ -37,26 +79,16 @@ create table if not exists public.simpanan (
   keterangan text
 );
 
--- 4. PINJAMAN TABLE (Opsional/Placeholder pengajuan pinjaman anggota)
-create table if not exists public.pinjaman (
-  id uuid default uuid_generate_v4() primary key,
-  anggota_id uuid references public.anggota(id) on delete cascade not null,
-  jumlah_pengajuan numeric(15, 2) not null check (jumlah_pengajuan > 0),
-  status text not null check (status in ('diajukan', 'disetujui', 'ditolak', 'lunas')) default 'diajukan',
-  tanggal_pengajuan timestamp with time zone default timezone('utc'::text, now()) not null,
-  keterangan text
-);
-
--- 5. HELP_CONTENT TABLE (Panduan & Navigasi Mudah - FR-05)
+-- 7. HELP_CONTENT TABLE (Panduan & Navigasi Mudah - FR-08)
 create table if not exists public.help_content (
   id uuid default uuid_generate_v4() primary key,
-  halaman_terkait text not null, -- 'login', 'pendaftaran', 'dashboard', 'simpanan', 'pengurus', 'umum'
+  halaman_terkait text not null,
   judul text not null,
   konten text not null,
   urutan_tampil integer default 0
 );
 
--- 6. AUDIT_LOG TABLE (Catatan Aktivitas - NFR-03 & Reliability)
+-- 8. AUDIT_LOG TABLE (Catatan Keandalan & Audit Sistem - NFR-02, NFR-03)
 create table if not exists public.audit_log (
   id uuid default uuid_generate_v4() primary key,
   user_id uuid references auth.users(id) on delete set null,
@@ -65,68 +97,16 @@ create table if not exists public.audit_log (
   detail jsonb default '{}'::jsonb
 );
 
--- Trigger untuk update updated_at pada profiles
-create or replace function public.handle_updated_at()
-returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger on_profiles_updated
-  before update on public.profiles
-  for each row execute procedure public.handle_updated_at();
-
--- Trigger otomatis membuat profile saat user mendaftar di auth.users
-create or replace function public.handle_new_user()
-returns trigger as $$
-declare
-  user_role text;
-  user_nama text;
-  user_nik text;
-  user_no_hp text;
-  user_alamat text;
-  new_anggota_id uuid;
-begin
-  user_role := coalesce(new.raw_user_meta_data->>'role', 'anggota');
-  user_nama := coalesce(new.raw_user_meta_data->>'nama', new.email);
-  user_nik := coalesce(new.raw_user_meta_data->>'nik', '3201000000000000');
-  user_no_hp := coalesce(new.raw_user_meta_data->>'no_hp', '');
-  user_alamat := coalesce(new.raw_user_meta_data->>'alamat', 'Desa Sukamaju');
-
-  insert into public.profiles (id, role, nama, no_hp)
-  values (new.id, user_role, user_nama, user_no_hp);
-
-  if user_role in ('anggota', 'calon_anggota', 'pengurus') then
-    insert into public.anggota (profile_id, nomor_anggota, nik, alamat, status)
-    values (
-      new.id,
-      'KOP-' || to_char(now(), 'YYMM') || '-' || substr(md5(random()::text), 1, 4),
-      user_nik,
-      user_alamat,
-      case when user_role = 'pengurus' then 'aktif' else 'aktif' end
-    );
-  end if;
-
-  return new;
-end;
-$$ language plpgsql security definer;
-
--- Drop trigger if exists and recreate
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
 -- ==============================================================
 -- ROW LEVEL SECURITY (RLS)
 -- ==============================================================
 
 alter table public.profiles enable row level security;
 alter table public.anggota enable row level security;
+alter table public.permohonan_domisili enable row level security;
+alter table public.pengajuan_hapus_akun enable row level security;
+alter table public.helpdesk_tiket enable row level security;
 alter table public.simpanan enable row level security;
-alter table public.pinjaman enable row level security;
 alter table public.help_content enable row level security;
 alter table public.audit_log enable row level security;
 
@@ -140,7 +120,7 @@ returns boolean as $$
 $$ language sql security definer;
 
 -- 1. Policies for profiles
-create policy "User dapat melihat profil sendiri"
+create policy "User dapat melihat profil sendiri atau pengurus melihat semua"
   on public.profiles for select
   using (auth.uid() = id or public.is_pengurus(auth.uid()));
 
@@ -149,7 +129,7 @@ create policy "User dapat mengupdate profil sendiri"
   using (auth.uid() = id);
 
 -- 2. Policies for anggota
-create policy "Anggota dapat melihat data keanggotaan sendiri atau Pengurus dapat melihat semua"
+create policy "Anggota dapat melihat data keanggotaan sendiri atau Pengurus melihat semua"
   on public.anggota for select
   using (profile_id = auth.uid() or public.is_pengurus(auth.uid()));
 
@@ -157,68 +137,59 @@ create policy "Pengurus dapat mengupdate status anggota"
   on public.anggota for update
   using (public.is_pengurus(auth.uid()));
 
-create policy "User dapat mendaftar anggota"
-  on public.anggota for insert
-  with check (profile_id = auth.uid() or public.is_pengurus(auth.uid()));
+-- 3. Policies for permohonan_domisili (FR-03)
+create policy "Anggota melihat permohonan domisili miliknya atau pengurus melihat semua"
+  on public.permohonan_domisili for select
+  using (profile_id = auth.uid() or public.is_pengurus(auth.uid()));
 
--- 3. Policies for simpanan
-create policy "Anggota dapat melihat riwayat simpanan sendiri atau Pengurus melihat semua"
+create policy "Anggota dapat mengajukan permohonan domisili"
+  on public.permohonan_domisili for insert
+  with check (profile_id = auth.uid());
+
+create policy "Pengurus dapat meninjau/mengupdate permohonan domisili"
+  on public.permohonan_domisili for update
+  using (public.is_pengurus(auth.uid()));
+
+-- 4. Policies for pengajuan_hapus_akun (FR-04)
+create policy "Anggota melihat pengajuan hapus akun miliknya atau pengurus melihat semua"
+  on public.pengajuan_hapus_akun for select
+  using (profile_id = auth.uid() or public.is_pengurus(auth.uid()));
+
+create policy "Anggota dapat mengajukan penghapusan akun"
+  on public.pengajuan_hapus_akun for insert
+  with check (profile_id = auth.uid());
+
+create policy "Pengurus dapat meninjau/mengupdate pengajuan penghapusan akun"
+  on public.pengajuan_hapus_akun for update
+  using (public.is_pengurus(auth.uid()));
+
+-- 5. Policies for helpdesk_tiket (FR-05 & FR-06)
+create policy "Anggota melihat tiket miliknya atau pengurus melihat semua tiket"
+  on public.helpdesk_tiket for select
+  using (profile_id = auth.uid() or public.is_pengurus(auth.uid()));
+
+create policy "Anggota dapat membuat tiket helpdesk baru"
+  on public.helpdesk_tiket for insert
+  with check (profile_id = auth.uid());
+
+create policy "Pengurus dapat memperbarui status dan tanggapan tiket"
+  on public.helpdesk_tiket for update
+  using (public.is_pengurus(auth.uid()));
+
+-- 6. Policies for simpanan
+create policy "Anggota melihat simpanan miliknya atau pengurus melihat semua"
   on public.simpanan for select
   using (
     anggota_id in (select id from public.anggota where profile_id = auth.uid())
     or public.is_pengurus(auth.uid())
   );
 
-create policy "Hanya pengurus yang dapat mencatat simpanan"
-  on public.simpanan for insert
-  with check (public.is_pengurus(auth.uid()));
-
--- 4. Policies for pinjaman
-create policy "Anggota dapat melihat pengajuan pinjaman sendiri atau Pengurus melihat semua"
-  on public.pinjaman for select
-  using (
-    anggota_id in (select id from public.anggota where profile_id = auth.uid())
-    or public.is_pengurus(auth.uid())
-  );
-
-create policy "Anggota dapat mengajukan pinjaman"
-  on public.pinjaman for insert
-  with check (
-    anggota_id in (select id from public.anggota where profile_id = auth.uid())
-  );
-
-create policy "Pengurus dapat memperbarui status pinjaman"
-  on public.pinjaman for update
-  using (public.is_pengurus(auth.uid()));
-
--- 5. Policies for help_content (Publik dapat membaca panduan)
+-- 7. Policies for help_content & audit_log
 create policy "Semua orang dapat membaca panduan"
-  on public.help_content for select
-  using (true);
+  on public.help_content for select using (true);
 
-create policy "Pengurus dapat mengelola panduan"
-  on public.help_content for all
-  using (public.is_pengurus(auth.uid()));
-
--- 6. Policies for audit_log
 create policy "Pengurus dapat melihat audit log"
-  on public.audit_log for select
-  using (public.is_pengurus(auth.uid()));
+  on public.audit_log for select using (public.is_pengurus(auth.uid()));
 
 create policy "Sistem/User dapat menambah audit log"
-  on public.audit_log for insert
-  with check (true);
-
--- ==============================================================
--- INITIAL SEED DATA (HELP CONTENT & PANDUAN SIMKOPDES)
--- ==============================================================
-
-insert into public.help_content (halaman_terkait, judul, konten, urutan_tampil)
-values
-('login', 'Bagaimana cara masuk ke akun SIMKOPDES?', 'Masukkan Nomor Anggota atau alamat Email Anda beserta kata sandi yang telah didaftarkan. Bila lupa kata sandi, klik tautan "Lupa Kata Sandi?" untuk panduan pemulihan.', 1),
-('login', 'Format Nomor Anggota', 'Nomor Anggota memiliki format seperti KOP-2611-ABCD. Anda juga dapat menggunakan Email terdaftar untuk login.', 2),
-('pendaftaran', 'Syarat Pendaftaran Anggota Koperasi', 'Pendaftaran hanya memerlukan NIK (16 digit sesuai KTP), Nama Lengkap, Nomor HP aktif, dan Alamat tempat tinggal. Tidak ada biaya pendaftaran formulir.', 1),
-('pendaftaran', 'Berapa lama proses verifikasi?', 'Setelah mendaftar, akun Anda akan diverifikasi oleh pengurus koperasi dalam 1x24 jam kerja.', 2),
-('dashboard', 'Mengenal Jenis Simpanan', '1. Simpanan Pokok: Dibayar sekali saat menjadi anggota.\n2. Simpanan Wajib: Dibayar rutin setiap bulan.\n3. Simpanan Sukarela: Dapat disetor dan ditarik sewaktu-waktu sesuai ketentuan.', 1),
-('pengurus', 'Panduan Pengurus Baru', 'Sebagai pengurus, Anda dapat menyetujui pendaftaran anggota baru melalui menu "Kelola Anggota", mencatat setoran simpanan warga, dan melihat ringkasan keuangan kas koperasi.', 1)
-on conflict do nothing;
+  on public.audit_log for insert with check (true);

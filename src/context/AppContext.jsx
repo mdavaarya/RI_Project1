@@ -2,11 +2,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import {
   initialProfiles,
   initialSavings,
-  initialLoans,
+  initialDomicileRequests,
+  initialDeletionRequests,
+  initialHelpdeskTickets,
   initialHelpContent,
   officialHelpContact
 } from '../data/initialData'
-import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import { isSupabaseConfigured } from '../lib/supabase'
 
 const AppContext = createContext(null)
 
@@ -17,14 +19,27 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialProfiles
   })
 
+  // FR-03 / US-01: Permohonan Domisili
+  const [domicileRequests, setDomicileRequests] = useState(() => {
+    const saved = localStorage.getItem('simkopdes_domicile_requests')
+    return saved ? JSON.parse(saved) : initialDomicileRequests
+  })
+
+  // FR-04 / US-03: Pengajuan Hapus Akun
+  const [deletionRequests, setDeletionRequests] = useState(() => {
+    const saved = localStorage.getItem('simkopdes_deletion_requests')
+    return saved ? JSON.parse(saved) : initialDeletionRequests
+  })
+
+  // FR-05 & FR-06: Helpdesk Internal
+  const [helpdeskTickets, setHelpdeskTickets] = useState(() => {
+    const saved = localStorage.getItem('simkopdes_helpdesk_tickets')
+    return saved ? JSON.parse(saved) : initialHelpdeskTickets
+  })
+
   const [savings, setSavings] = useState(() => {
     const saved = localStorage.getItem('simkopdes_savings')
     return saved ? JSON.parse(saved) : initialSavings
-  })
-
-  const [loans, setLoans] = useState(() => {
-    const saved = localStorage.getItem('simkopdes_loans')
-    return saved ? JSON.parse(saved) : initialLoans
   })
 
   const [auditLogs, setAuditLogs] = useState(() => {
@@ -32,10 +47,10 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [
       {
         id: 'log-1',
-        aksi: 'System Initialization',
+        aksi: 'System Initialization PRD v2.0',
         user: 'Sistem SIMKOPDES',
         timestamp: new Date().toISOString(),
-        detail: 'Sistem diinisialisasi dalam mode aman'
+        detail: 'Sistem diinisialisasi dengan modul Kendali Akun dan Helpdesk Internal'
       }
     ]
   })
@@ -43,20 +58,18 @@ export const AppProvider = ({ children }) => {
   // 2. Active Session & Navigation
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('simkopdes_current_user')
-    // Default to Budi Santoso (Anggota) for quick demonstration, or null
     return saved ? JSON.parse(saved) : initialProfiles[0]
   })
 
   const [authView, setAuthView] = useState('login') // 'login' | 'register' | 'forgot_password'
-  const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard' | 'simpanan' | 'pinjaman' | 'profil' | 'kelola_anggota' | 'panduan' | 'bantuan'
+  const [activeTab, setActiveTab] = useState('kendali_akun') // 'kendali_akun' | 'helpdesk' | 'profil' | 'kelola_pengurus'
 
   // 3. FR-01 / UXR-01: Connection & Error Handling State
-  // simulatedError: null | 'network_error' | 'server_down' | 'offline'
   const [simulatedError, setSimulatedError] = useState(null)
   const [isRetrying, setIsRetrying] = useState(false)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
 
-  // 4. FR-05 / UXR-05: Contextual Help State
+  // 4. FR-08: Contextual Help State
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
   const [activeHelpTopic, setActiveHelpTopic] = useState(null)
 
@@ -69,12 +82,20 @@ export const AppProvider = ({ children }) => {
   }, [profiles])
 
   useEffect(() => {
-    localStorage.setItem('simkopdes_savings', JSON.stringify(savings))
-  }, [savings])
+    localStorage.setItem('simkopdes_domicile_requests', JSON.stringify(domicileRequests))
+  }, [domicileRequests])
 
   useEffect(() => {
-    localStorage.setItem('simkopdes_loans', JSON.stringify(loans))
-  }, [loans])
+    localStorage.setItem('simkopdes_deletion_requests', JSON.stringify(deletionRequests))
+  }, [deletionRequests])
+
+  useEffect(() => {
+    localStorage.setItem('simkopdes_helpdesk_tickets', JSON.stringify(helpdeskTickets))
+  }, [helpdeskTickets])
+
+  useEffect(() => {
+    localStorage.setItem('simkopdes_savings', JSON.stringify(savings))
+  }, [savings])
 
   useEffect(() => {
     localStorage.setItem('simkopdes_audit_logs', JSON.stringify(auditLogs))
@@ -152,12 +173,10 @@ export const AppProvider = ({ children }) => {
   const login = ({ identifier, password }) => {
     const cleanId = identifier.trim().toLowerCase()
     
-    // Check if error state simulated
     if (simulatedError) {
       return { success: false, message: 'Layanan sedang tidak dapat diakses saat ini. Silakan coba sesaat lagi.' }
     }
 
-    // Match by nomor_anggota or email
     const foundUser = profiles.find((p) => 
       p.email.toLowerCase() === cleanId || 
       (p.nomor_anggota && p.nomor_anggota.toLowerCase() === cleanId)
@@ -172,8 +191,6 @@ export const AppProvider = ({ children }) => {
       }
     }
 
-    // Default mock password check: allows 'password123' or 'demo' or anything >= 6 chars for testing
-    // If user enters invalid password format:
     if (!password || password.length < 6) {
       return {
         success: false,
@@ -182,14 +199,13 @@ export const AppProvider = ({ children }) => {
       }
     }
 
-    // Verification check for pending members
     if (foundUser.status === 'pending') {
       logAudit('Login Ditolak', foundUser.nama, 'Status keanggotaan masih menunggu verifikasi pengurus')
       return {
         success: false,
         statusPending: true,
         user: foundUser,
-        message: 'Pendaftaran akun Anda masih dalam proses peninjauan oleh pengurus koperasi (status: Menunggu Verifikasi). Hubungi pengurus koperasi jika memerlukan percepatan.'
+        message: 'Pendaftaran akun Anda masih dalam proses peninjauan oleh pengurus koperasi (status: Menunggu Verifikasi).'
       }
     }
 
@@ -204,26 +220,24 @@ export const AppProvider = ({ children }) => {
     logAudit('Berhasil Login', foundUser.nama, `Masuk ke akun role ${foundUser.role}`)
     showToast(`Selamat datang kembali, ${foundUser.nama}!`, 'success')
 
-    // Navigate to appropriate tab based on role
     if (foundUser.role === 'pengurus') {
-      setActiveTab('kelola_anggota')
+      setActiveTab('kelola_pengurus')
     } else {
-      setActiveTab('dashboard')
+      setActiveTab('kendali_akun')
     }
 
     return { success: true, user: foundUser }
   }
 
-  // Quick switch role (helps testers easily test Anggota vs Pengurus)
   const switchUserDirectly = (profileId) => {
     const target = profiles.find((p) => p.id === profileId)
     if (target) {
       setCurrentUser(target)
       showToast(`Beralih peran ke: ${target.nama} (${target.role})`, 'info')
       if (target.role === 'pengurus') {
-        setActiveTab('kelola_anggota')
+        setActiveTab('kelola_pengurus')
       } else {
-        setActiveTab('dashboard')
+        setActiveTab('kendali_akun')
       }
       logAudit('Beralih Profil Pengujian', target.nama, `Role: ${target.role}`)
     }
@@ -235,21 +249,20 @@ export const AppProvider = ({ children }) => {
     }
     setCurrentUser(null)
     setAuthView('login')
-    setActiveTab('dashboard')
+    setActiveTab('kendali_akun')
     showToast('Anda telah berhasil keluar dari akun.', 'info')
   }
 
-  // --- FR-03: Member Registration ---
+  // --- FR-07: Member Registration ---
   const registerMember = (formData) => {
     const { nama, nik, no_hp, alamat, email } = formData
     
-    // Check if email or NIK already registered
     const existing = profiles.find((p) => p.email.toLowerCase() === email.toLowerCase() || p.nik === nik)
     if (existing) {
       return {
         success: false,
         message: existing.nik === nik 
-          ? 'NIK ini sudah terdaftar sebagai anggota. Silakan hubungi pengurus bila merasa ada kesalahan data.' 
+          ? 'NIK ini sudah terdaftar sebagai anggota.' 
           : 'Alamat Email ini sudah digunakan. Silakan gunakan email lain atau masuk ke akun Anda.'
       }
     }
@@ -266,7 +279,8 @@ export const AppProvider = ({ children }) => {
       nomor_anggota: newNomorAnggota,
       nik: nik.trim(),
       alamat: alamat.trim(),
-      status: 'pending', // Menunggu persetujuan pengurus sesuai PRD business rules
+      koperasi_asal: 'KUD Sukamaju',
+      status: 'pending',
       tanggal_daftar: new Date().toISOString(),
     }
 
@@ -280,77 +294,200 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  // --- FR-04: Member Actions & Savings ---
-  const addSavingsRecord = ({ anggota_id, jenis, nominal, keterangan }) => {
-    const newSavings = {
-      id: `sav-${Date.now()}`,
-      anggota_id,
-      jenis,
-      nominal: Number(nominal),
-      tanggal_transaksi: new Date().toISOString(),
-      keterangan: keterangan || `Setoran simpanan ${jenis}`,
-      status: 'sukses',
+  // --- FR-03 / US-01: Permohonan Pindah Domisili / Koperasi ---
+  const submitDomicileRequest = ({ alamat_baru, koperasi_tujuan, alasan }) => {
+    if (!currentUser) return { success: false, message: 'Harus login terlebih dahulu' }
+
+    const newReq = {
+      id: `dom-${Date.now()}`,
+      profile_id: currentUser.id,
+      nama_pemohon: currentUser.nama,
+      nomor_anggota: currentUser.nomor_anggota,
+      alamat_lama: currentUser.alamat,
+      alamat_baru: alamat_baru.trim(),
+      koperasi_asal: currentUser.koperasi_asal || 'KUD Sukamaju',
+      koperasi_tujuan: koperasi_tujuan ? koperasi_tujuan.trim() : 'KUD Sukamaju',
+      alasan: alasan.trim(),
+      status: 'dikirim',
+      catatan_pengurus: 'Menunggu peninjauan pengurus koperasi',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
-    setSavings((prev) => [newSavings, ...prev])
-    
-    const member = profiles.find((p) => p.id === anggota_id)
-    logAudit('Pencatatan Simpanan', currentUser?.nama || 'Pengurus', `Nominal: Rp ${Number(nominal).toLocaleString('id-ID')} untuk ${member?.nama || anggota_id}`)
-    showToast(`Setoran simpanan ${jenis} sebesar Rp ${Number(nominal).toLocaleString('id-ID')} berhasil dicatat.`, 'success')
-    return { success: true }
+
+    setDomicileRequests((prev) => [newReq, ...prev])
+    logAudit('Pengajuan Pindah Domisili', currentUser.nama, `Alamat baru: ${alamat_baru}`)
+    showToast('Permohonan perpindahan domisili berhasil dikirim dan dicatat.', 'success')
+    return { success: true, data: newReq }
   }
 
-  const applyLoan = ({ anggota_id, jumlah_pengajuan, keperluan }) => {
-    const newLoan = {
-      id: `loan-${Date.now()}`,
-      anggota_id,
-      jumlah_pengajuan: Number(jumlah_pengajuan),
-      keperluan,
-      status: 'diajukan',
-      tanggal_pengajuan: new Date().toISOString(),
-      keterangan: 'Menunggu peninjauan pengurus'
-    }
-    setLoans((prev) => [newLoan, ...prev])
-    logAudit('Pengajuan Pinjaman', currentUser?.nama || 'Anggota', `Pengajuan pinjaman: Rp ${Number(jumlah_pengajuan).toLocaleString('id-ID')}`)
-    showToast('Pengajuan pinjaman Anda berhasil diajukan dan sedang ditinjau pengurus.', 'success')
-    return { success: true }
+  // Update status permohonan domisili oleh pengurus (US-02)
+  const updateDomicileRequest = (requestId, status, catatan) => {
+    setDomicileRequests((prev) =>
+      prev.map((r) => {
+        if (r.id === requestId) {
+          // If approved, update member's profile address!
+          if (status === 'disetujui') {
+            setProfiles((pList) =>
+              pList.map((p) =>
+                p.id === r.profile_id
+                  ? { ...p, alamat: r.alamat_baru, koperasi_asal: r.koperasi_tujuan || p.koperasi_asal }
+                  : p
+              )
+            )
+            if (currentUser && currentUser.id === r.profile_id) {
+              setCurrentUser((c) => ({
+                ...c,
+                alamat: r.alamat_baru,
+                koperasi_asal: r.koperasi_tujuan || c.koperasi_asal
+              }))
+            }
+          }
+          return {
+            ...r,
+            status,
+            catatan_pengurus: catatan || r.catatan_pengurus,
+            updated_at: new Date().toISOString()
+          }
+        }
+        return r
+      })
+    )
+
+    logAudit('Tindak Lanjut Permohonan Domisili', currentUser?.nama || 'Pengurus', `Status: ${status}`)
+    showToast(`Status permohonan domisili diperbarui menjadi: ${status}`, 'success')
   }
 
+  // --- FR-04 / US-03: Pengajuan Penghapusan Akun ---
+  const submitDeletionRequest = ({ alasan, konfirmasi_konsekuensi }) => {
+    if (!currentUser) return { success: false, message: 'Harus login terlebih dahulu' }
+    if (!konfirmasi_konsekuensi) {
+      return { success: false, message: 'Anda harus menyetujui pemahaman konsekuensi penghapusan akun.' }
+    }
+
+    const newReq = {
+      id: `del-${Date.now()}`,
+      profile_id: currentUser.id,
+      nama_pemohon: currentUser.nama,
+      nomor_anggota: currentUser.nomor_anggota,
+      alasan: alasan.trim(),
+      konfirmasi_konsekuensi: true,
+      status: 'dikirim',
+      catatan_pengurus: 'Menunggu peninjauan hak simpanan & kewajiban retensi data',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    setDeletionRequests((prev) => [newReq, ...prev])
+    // Update status in profiles to 'menunggu_penghapusan'
+    setProfiles((prev) =>
+      prev.map((p) => (p.id === currentUser.id ? { ...p, status: 'menunggu_penghapusan' } : p))
+    )
+    setCurrentUser((prev) => ({ ...prev, status: 'menunggu_penghapusan' }))
+
+    logAudit('Pengajuan Penghapusan Akun', currentUser.nama, `Alasan: ${alasan}`)
+    showToast('Permohonan penghapusan akun berhasil dikirim untuk ditinjau pengurus.', 'warning')
+    return { success: true, data: newReq }
+  }
+
+  // Update status pengajuan hapus akun oleh pengurus
+  const updateDeletionRequest = (requestId, status, catatan) => {
+    setDeletionRequests((prev) =>
+      prev.map((r) => {
+        if (r.id === requestId) {
+          if (status === 'disetujui') {
+            setProfiles((pList) =>
+              pList.map((p) => (p.id === r.profile_id ? { ...p, status: 'nonaktif' } : p))
+            )
+            if (currentUser && currentUser.id === r.profile_id) {
+              setCurrentUser((c) => ({ ...c, status: 'nonaktif' }))
+            }
+          } else if (status === 'ditolak') {
+            setProfiles((pList) =>
+              pList.map((p) => (p.id === r.profile_id ? { ...p, status: 'aktif' } : p))
+            )
+            if (currentUser && currentUser.id === r.profile_id) {
+              setCurrentUser((c) => ({ ...c, status: 'aktif' }))
+            }
+          }
+          return {
+            ...r,
+            status,
+            catatan_pengurus: catatan || r.catatan_pengurus,
+            updated_at: new Date().toISOString()
+          }
+        }
+        return r
+      })
+    )
+
+    logAudit('Tindak Lanjut Hapus Akun', currentUser?.nama || 'Pengurus', `Status: ${status}`)
+    showToast(`Status pengajuan penghapusan akun diubah menjadi: ${status}`, 'info')
+  }
+
+  // --- FR-05 & FR-06 / US-04, US-05, US-06: Helpdesk Internal ---
+  const createHelpdeskTicket = ({ kategori, judul, deskripsi }) => {
+    if (!currentUser) return { success: false, message: 'Harus login terlebih dahulu' }
+
+    const ticketNumber = `HD-2611-${Math.floor(100 + Math.random() * 900)}`
+    const newTicket = {
+      id: `tik-${Date.now()}`,
+      nomor_tiket: ticketNumber,
+      profile_id: currentUser.id,
+      nama_pelapor: currentUser.nama,
+      kategori,
+      judul: judul.trim(),
+      deskripsi: deskripsi.trim(),
+      status: 'dikirim',
+      tanggapan_pengurus: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    setHelpdeskTickets((prev) => [newTicket, ...prev])
+    logAudit('Tiket Helpdesk Dibuat', currentUser.nama, `Nomor: ${ticketNumber} (${kategori})`)
+    showToast(`Tiket Helpdesk ${ticketNumber} berhasil dibuat dan dikirim langsung ke sistem pengurus!`, 'success')
+    return { success: true, data: newTicket }
+  }
+
+  const updateTicketStatus = (ticketId, status, tanggapan) => {
+    setHelpdeskTickets((prev) =>
+      prev.map((t) =>
+        t.id === ticketId
+          ? {
+              ...t,
+              status,
+              tanggapan_pengurus: tanggapan || t.tanggapan_pengurus,
+              updated_at: new Date().toISOString()
+            }
+          : t
+      )
+    )
+
+    logAudit('Pembaruan Status Tiket Helpdesk', currentUser?.nama || 'Pengurus', `Tiket ID: ${ticketId} -> ${status}`)
+    showToast(`Status laporan Helpdesk diperbarui menjadi: ${status}`, 'success')
+  }
+
+  // Basic Profile Update
   const updateProfile = (updatedFields) => {
     if (!currentUser) return
     const updated = { ...currentUser, ...updatedFields }
     setCurrentUser(updated)
     setProfiles((prev) => prev.map((p) => (p.id === currentUser.id ? updated : p)))
-    logAudit('Pembaruan Profil', currentUser.nama, 'Data kontak profil diperbarui')
+    logAudit('Pembaruan Kontak Profil', currentUser.nama, 'Data kontak diperbarui')
     showToast('Profil Anda berhasil diperbarui.', 'success')
   }
 
-  // --- Pengurus Admin Actions (US-05) ---
+  // Pengurus Approvals
   const approveMember = (memberId) => {
     setProfiles((prev) =>
       prev.map((p) => (p.id === memberId ? { ...p, status: 'aktif' } : p))
     )
     const target = profiles.find((p) => p.id === memberId)
-    logAudit('Persetujuan Anggota', currentUser?.nama || 'Pengurus', `Menyetujui anggota: ${target?.nama || memberId}`)
-    showToast(`Keanggotaan ${target?.nama || 'calon anggota'} berhasil disetujui & aktif!`, 'success')
+    logAudit('Persetujuan Pendaftaran Anggota', currentUser?.nama || 'Pengurus', `Anggota: ${target?.nama}`)
+    showToast(`Keanggotaan ${target?.nama} berhasil disetujui & aktif!`, 'success')
   }
 
-  const toggleMemberStatus = (memberId) => {
-    let nextStatus = 'aktif'
-    setProfiles((prev) =>
-      prev.map((p) => {
-        if (p.id === memberId) {
-          nextStatus = p.status === 'aktif' ? 'nonaktif' : 'aktif'
-          return { ...p, status: nextStatus }
-        }
-        return p
-      })
-    )
-    const target = profiles.find((p) => p.id === memberId)
-    logAudit('Ubah Status Anggota', currentUser?.nama || 'Pengurus', `Ubah status ${target?.nama} menjadi ${nextStatus}`)
-    showToast(`Status keanggotaan diubah menjadi: ${nextStatus}.`, 'info')
-  }
-
-  // --- FR-05: Contextual Help Modal Trigger ---
+  // FR-08 Help trigger
   const openHelp = (topic = null) => {
     setActiveHelpTopic(topic)
     setIsHelpModalOpen(true)
@@ -364,7 +501,6 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider
       value={{
-        // Auth & User
         currentUser,
         setCurrentUser,
         profiles,
@@ -378,18 +514,27 @@ export const AppProvider = ({ children }) => {
         activeTab,
         setActiveTab,
 
-        // Data
+        // FR-03: Domicile Requests
+        domicileRequests,
+        submitDomicileRequest,
+        updateDomicileRequest,
+
+        // FR-04: Account Deletion Requests
+        deletionRequests,
+        submitDeletionRequest,
+        updateDeletionRequest,
+
+        // FR-05 & FR-06: Helpdesk Internal
+        helpdeskTickets,
+        createHelpdeskTicket,
+        updateTicketStatus,
+
+        // General
         savings,
-        loans,
-        addSavingsRecord,
-        applyLoan,
         helpContent: initialHelpContent,
         officialHelpContact,
         auditLogs,
-
-        // Pengurus actions
         approveMember,
-        toggleMemberStatus,
 
         // FR-01: Connection & Error state
         simulatedError,
@@ -399,7 +544,7 @@ export const AppProvider = ({ children }) => {
         isRetrying,
         isOnline,
 
-        // FR-05: Help & Guides
+        // FR-08: Help & Guides
         isHelpModalOpen,
         activeHelpTopic,
         openHelp,
@@ -408,8 +553,6 @@ export const AppProvider = ({ children }) => {
         // UI Feedback
         toast,
         showToast,
-
-        // Supabase info
         isSupabaseConfigured,
       }}
     >

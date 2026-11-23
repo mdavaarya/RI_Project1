@@ -6,10 +6,10 @@ import {
   LogOut, 
   User, 
   ShieldCheck, 
-  Wifi, 
   WifiOff,
   UserCheck,
-  ChevronRight
+  LifeBuoy,
+  Settings
 } from 'lucide-react'
 
 export const Header = () => {
@@ -45,7 +45,7 @@ export const Header = () => {
               <div className="flex items-center gap-2">
                 <span className="font-bold text-lg text-slate-900 tracking-tight">SIMKOPDES</span>
                 <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                  v1.1
+                  v2.0
                 </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">
@@ -60,47 +60,39 @@ export const Header = () => {
               {currentUser.role === 'pengurus' ? (
                 <>
                   <button
-                    onClick={() => setActiveTab('kelola_anggota')}
+                    onClick={() => setActiveTab('kelola_pengurus')}
                     className={`px-3 py-1.5 rounded-lg transition-colors ${
-                      activeTab === 'kelola_anggota'
-                        ? 'bg-white text-emerald-700 shadow-sm font-semibold'
+                      activeTab === 'kelola_pengurus'
+                        ? 'bg-purple-900 text-white shadow-sm font-semibold'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    Kelola Anggota
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('catat_simpanan')}
-                    className={`px-3 py-1.5 rounded-lg transition-colors ${
-                      activeTab === 'catat_simpanan'
-                        ? 'bg-white text-emerald-700 shadow-sm font-semibold'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Catat Simpanan
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('panduan_pengurus')}
-                    className={`px-3 py-1.5 rounded-lg transition-colors ${
-                      activeTab === 'panduan_pengurus'
-                        ? 'bg-white text-emerald-700 shadow-sm font-semibold'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Panduan Pengurus
+                    Ruang Kerja Pengurus (Helpdesk & Permohonan)
                   </button>
                 </>
               ) : (
                 <>
                   <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className={`px-3 py-1.5 rounded-lg transition-colors ${
-                      activeTab === 'dashboard'
+                    onClick={() => setActiveTab('kendali_akun')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                      activeTab === 'kendali_akun'
                         ? 'bg-white text-emerald-700 shadow-sm font-semibold'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    Dashboard Saya
+                    <Settings className="w-4 h-4" />
+                    <span>Kendali Akun & Domisili (FR-03, FR-04)</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('helpdesk')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                      activeTab === 'helpdesk'
+                        ? 'bg-white text-emerald-700 shadow-sm font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <LifeBuoy className="w-4 h-4" />
+                    <span>Helpdesk Internal (FR-05)</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('simpanan')}
@@ -112,16 +104,6 @@ export const Header = () => {
                   >
                     Riwayat Simpanan
                   </button>
-                  <button
-                    onClick={() => setActiveTab('profil')}
-                    className={`px-3 py-1.5 rounded-lg transition-colors ${
-                      activeTab === 'profil'
-                        ? 'bg-white text-emerald-700 shadow-sm font-semibold'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Profil Anggota
-                  </button>
                 </>
               )}
             </nav>
@@ -129,7 +111,7 @@ export const Header = () => {
 
           {/* Right Action Area */}
           <div className="flex items-center gap-3">
-            {/* Quick Contextual Help Trigger (FR-05) */}
+            {/* Quick Contextual Help Trigger (FR-08) */}
             <button
               onClick={() => openHelp(currentUser?.role === 'pengurus' ? 'pengurus' : 'umum')}
               className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 px-3 py-2 rounded-lg transition-colors border border-slate-200"
