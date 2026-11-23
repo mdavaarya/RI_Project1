@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 export const SavingsHistory = () => {
-  const { currentUser, savings, openHelp } = useApp()
+  const { currentUser, savings, openHelp, setActiveTab } = useApp()
   const [filterType, setFilterType] = useState('semua')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -28,6 +28,14 @@ export const SavingsHistory = () => {
 
   return (
     <div className="space-y-6">
+      {/* Back to Dashboard Breadcrumb */}
+      <button
+        onClick={() => setActiveTab('dashboard')}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs"
+      >
+        <span>← Kembali ke Beranda / Dashboard</span>
+      </button>
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div>

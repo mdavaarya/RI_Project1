@@ -109,11 +109,11 @@ Fokus: Penguatan Kendali Akun dan Integrasi Layanan Helpdesk Internal
   - **Hasil pengujian:** Pengurus dapat memperbarui status tiket (`Sedang Ditangani`, `Selesai`, dll) dan tanggapan langsung terbaca oleh pelapor.
   - **Status:** Selesai (Done)
 
-- **Scope v2.0: Penyesuaian Ruang Lingkup Aplikasi**
-  - **Bagian yang diubah:** Penataan ulang navigasi utama dengan memusatkan fitur pada Kendali Akun, Layanan Helpdesk, dan Operasional Pengurus.
-  - **Alasan perubahan:** Mematuhi batasan *Out of Scope* PRD v2.0 poin 9 (tidak menambah modul keuangan baru atau LMS eksternal).
-  - **File yang berubah:** `src/components/common/Header.jsx`, `src/App.jsx`, `src/data/initialData.js`
-  - **Hasil pengujian:** Navigasi bersih, fokus pada kendali akun keanggotaan dan helpdesk sesuai kebutuhan tugas.
+- **Scope v2.0: Penyesuaian Ruang Lingkup & Desain Navigasi Samping (Sidebar)**
+  - **Bagian yang diubah:** Rekonstruksi tata letak navigasi dari top navbar menjadi **Sidebar samping** pada desktop dan **menu hamburger** pada layar mobile, serta mengembalikan Dashboard sebagai Beranda Utama dengan kartu-kartu aksi menuju fitur Helpdesk, Pindah Domisili, dan Pengajuan Hapus Akun.
+  - **Alasan perubahan:** Meningkatkan kemudahan akses fitur aplikasi sesuai pola navigasi standar, serta memberikan beranda utama yang jelas untuk mengakses setiap fitur yang dibangun.
+  - **File yang berubah:** `src/components/common/Sidebar.jsx`, `src/components/common/TopNavbar.jsx`, `src/components/member/MemberDashboard.jsx`, `src/App.jsx`, `src/context/AppContext.jsx`
+  - **Hasil pengujian:** Sidebar tampil rapi di sebelah kiri pada desktop, hamburger menu berfungsi responsif di mobile, dan tombol aksi di dashboard mengarahkan pengguna secara presisi ke masing-masing fitur.
   - **Status:** Selesai (Done)
 
 ---

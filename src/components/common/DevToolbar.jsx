@@ -63,20 +63,26 @@ export const DevToolbar = () => {
                 <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
                   Navigasi Cepat Fitur PRD v2.0:
                 </label>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-3 gap-1.5">
                   <button
-                    onClick={() => setActiveTab('kendali_akun')}
-                    className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] flex items-center gap-1"
+                    onClick={() => setActiveTab('dashboard')}
+                    className="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] flex items-center justify-center gap-1"
                   >
-                    <Settings className="w-3 h-3 text-emerald-400" />
-                    <span>Pindah Domisili & Hapus Akun</span>
+                    <span>🏠 Beranda</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('helpdesk')}
-                    className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] flex items-center gap-1"
+                    className="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] flex items-center justify-center gap-1"
                   >
                     <LifeBuoy className="w-3 h-3 text-emerald-400" />
-                    <span>Helpdesk Internal</span>
+                    <span>Helpdesk</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('kendali_akun')}
+                    className="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] flex items-center justify-center gap-1"
+                  >
+                    <Settings className="w-3 h-3 text-emerald-400" />
+                    <span>Kendali Akun</span>
                   </button>
                 </div>
               </div>

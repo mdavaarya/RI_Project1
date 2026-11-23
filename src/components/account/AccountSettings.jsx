@@ -31,10 +31,14 @@ export const AccountSettings = () => {
     submitDomicileRequest,
     deletionRequests,
     submitDeletionRequest,
-    openHelp
+    openHelp,
+    setActiveTab,
+    accountSubTab,
+    setAccountSubTab
   } = useApp()
 
-  const [activeSubTab, setActiveSubTab] = useState('domisili') // 'profil' | 'domisili' | 'hapus_akun'
+  const activeSubTab = accountSubTab || 'domisili'
+  const setActiveSubTab = setAccountSubTab
 
   // Form State: Domisili
   const [domicileForm, setDomicileForm] = useState({
@@ -106,6 +110,14 @@ export const AccountSettings = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Back to Dashboard Breadcrumb */}
+      <button
+        onClick={() => setActiveTab('dashboard')}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs"
+      >
+        <span>← Kembali ke Beranda / Dashboard</span>
+      </button>
+
       {/* Top Banner */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

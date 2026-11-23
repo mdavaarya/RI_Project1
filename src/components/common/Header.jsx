@@ -9,7 +9,8 @@ import {
   WifiOff,
   UserCheck,
   LifeBuoy,
-  Settings
+  Settings,
+  LayoutDashboard
 } from 'lucide-react'
 
 export const Header = () => {
@@ -37,7 +38,10 @@ export const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Cooperative Brand */}
-          <div className="flex items-center gap-3">
+          <div 
+            onClick={() => currentUser?.role === 'pengurus' ? setActiveTab('kelola_pengurus') : setActiveTab('dashboard')}
+            className="flex items-center gap-3 cursor-pointer"
+          >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
               <Building2 className="w-6 h-6" />
             </div>
@@ -61,7 +65,7 @@ export const Header = () => {
                 <>
                   <button
                     onClick={() => setActiveTab('kelola_pengurus')}
-                    className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    className={`px-3.5 py-1.5 rounded-lg transition-colors ${
                       activeTab === 'kelola_pengurus'
                         ? 'bg-purple-900 text-white shadow-sm font-semibold'
                         : 'text-slate-600 hover:text-slate-900'
@@ -73,19 +77,19 @@ export const Header = () => {
               ) : (
                 <>
                   <button
-                    onClick={() => setActiveTab('kendali_akun')}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
-                      activeTab === 'kendali_akun'
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors ${
+                      activeTab === 'dashboard' || !activeTab
                         ? 'bg-white text-emerald-700 shadow-sm font-semibold'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <Settings className="w-4 h-4" />
-                    <span>Kendali Akun & Domisili (FR-03, FR-04)</span>
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Beranda</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('helpdesk')}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors ${
                       activeTab === 'helpdesk'
                         ? 'bg-white text-emerald-700 shadow-sm font-semibold'
                         : 'text-slate-600 hover:text-slate-900'
@@ -95,8 +99,19 @@ export const Header = () => {
                     <span>Helpdesk Internal (FR-05)</span>
                   </button>
                   <button
+                    onClick={() => setActiveTab('kendali_akun')}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-colors ${
+                      activeTab === 'kendali_akun'
+                        ? 'bg-white text-emerald-700 shadow-sm font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Pindah Domisili & Hapus Akun</span>
+                  </button>
+                  <button
                     onClick={() => setActiveTab('simpanan')}
-                    className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    className={`px-3.5 py-1.5 rounded-lg transition-colors ${
                       activeTab === 'simpanan'
                         ? 'bg-white text-emerald-700 shadow-sm font-semibold'
                         : 'text-slate-600 hover:text-slate-900'

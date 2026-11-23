@@ -62,7 +62,8 @@ export const AppProvider = ({ children }) => {
   })
 
   const [authView, setAuthView] = useState('login') // 'login' | 'register' | 'forgot_password'
-  const [activeTab, setActiveTab] = useState('kendali_akun') // 'kendali_akun' | 'helpdesk' | 'profil' | 'kelola_pengurus'
+  const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard' | 'kendali_akun' | 'helpdesk' | 'simpanan' | 'kelola_pengurus'
+  const [accountSubTab, setAccountSubTab] = useState('domisili') // 'domisili' | 'hapus_akun' | 'profil'
 
   // 3. FR-01 / UXR-01: Connection & Error Handling State
   const [simulatedError, setSimulatedError] = useState(null)
@@ -223,7 +224,7 @@ export const AppProvider = ({ children }) => {
     if (foundUser.role === 'pengurus') {
       setActiveTab('kelola_pengurus')
     } else {
-      setActiveTab('kendali_akun')
+      setActiveTab('dashboard')
     }
 
     return { success: true, user: foundUser }
@@ -237,7 +238,7 @@ export const AppProvider = ({ children }) => {
       if (target.role === 'pengurus') {
         setActiveTab('kelola_pengurus')
       } else {
-        setActiveTab('kendali_akun')
+        setActiveTab('dashboard')
       }
       logAudit('Beralih Profil Pengujian', target.nama, `Role: ${target.role}`)
     }
@@ -249,7 +250,7 @@ export const AppProvider = ({ children }) => {
     }
     setCurrentUser(null)
     setAuthView('login')
-    setActiveTab('kendali_akun')
+    setActiveTab('dashboard')
     showToast('Anda telah berhasil keluar dari akun.', 'info')
   }
 
@@ -325,7 +326,6 @@ export const AppProvider = ({ children }) => {
     setDomicileRequests((prev) =>
       prev.map((r) => {
         if (r.id === requestId) {
-          // If approved, update member's profile address!
           if (status === 'disetujui') {
             setProfiles((pList) =>
               pList.map((p) =>
@@ -378,7 +378,6 @@ export const AppProvider = ({ children }) => {
     }
 
     setDeletionRequests((prev) => [newReq, ...prev])
-    // Update status in profiles to 'menunggu_penghapusan'
     setProfiles((prev) =>
       prev.map((p) => (p.id === currentUser.id ? { ...p, status: 'menunggu_penghapusan' } : p))
     )
@@ -389,7 +388,6 @@ export const AppProvider = ({ children }) => {
     return { success: true, data: newReq }
   }
 
-  // Update status pengajuan hapus akun oleh pengurus
   const updateDeletionRequest = (requestId, status, catatan) => {
     setDeletionRequests((prev) =>
       prev.map((r) => {
@@ -424,7 +422,7 @@ export const AppProvider = ({ children }) => {
     showToast(`Status pengajuan penghapusan akun diubah menjadi: ${status}`, 'info')
   }
 
-  // --- FR-05 & FR-06 / US-04, US-05, US-06: Helpdesk Internal ---
+  // --- FR-05 & FR-06: Helpdesk Internal ---
   const createHelpdeskTicket = ({ kategori, judul, deskripsi }) => {
     if (!currentUser) return { success: false, message: 'Harus login terlebih dahulu' }
 
@@ -467,7 +465,6 @@ export const AppProvider = ({ children }) => {
     showToast(`Status laporan Helpdesk diperbarui menjadi: ${status}`, 'success')
   }
 
-  // Basic Profile Update
   const updateProfile = (updatedFields) => {
     if (!currentUser) return
     const updated = { ...currentUser, ...updatedFields }
@@ -477,7 +474,6 @@ export const AppProvider = ({ children }) => {
     showToast('Profil Anda berhasil diperbarui.', 'success')
   }
 
-  // Pengurus Approvals
   const approveMember = (memberId) => {
     setProfiles((prev) =>
       prev.map((p) => (p.id === memberId ? { ...p, status: 'aktif' } : p))
@@ -487,7 +483,6 @@ export const AppProvider = ({ children }) => {
     showToast(`Keanggotaan ${target?.nama} berhasil disetujui & aktif!`, 'success')
   }
 
-  // FR-08 Help trigger
   const openHelp = (topic = null) => {
     setActiveHelpTopic(topic)
     setIsHelpModalOpen(true)
@@ -513,6 +508,8 @@ export const AppProvider = ({ children }) => {
         setAuthView,
         activeTab,
         setActiveTab,
+        accountSubTab,
+        setAccountSubTab,
 
         // FR-03: Domicile Requests
         domicileRequests,

@@ -30,7 +30,8 @@ export const HelpdeskInternal = () => {
     helpdeskTickets, 
     createHelpdeskTicket, 
     openHelp,
-    officialHelpContact 
+    officialHelpContact,
+    setActiveTab: setNavActiveTab
   } = useApp()
 
   const [activeTab, setActiveTab] = useState('daftar_tiket') // 'daftar_tiket' | 'buat_tiket'
@@ -97,6 +98,14 @@ export const HelpdeskInternal = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Back to Dashboard Breadcrumb */}
+      <button
+        onClick={() => setNavActiveTab('dashboard')}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs"
+      >
+        <span>← Kembali ke Beranda / Dashboard</span>
+      </button>
+
       {/* Header Banner */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
