@@ -2,6 +2,10 @@
 
 ### Peningkatan Pengalaman Pengguna: Penguatan Kendali Akun dan Integrasi Layanan Helpdesk (PRD v2.0)
 
+> 🌐 **Live Demo Web (Vercel):** [https://ri-project1.vercel.app](https://ri-project1.vercel.app)  
+> 📦 **Repository GitHub:** [https://github.com/mdavaarya/RI_Project1](https://github.com/mdavaarya/RI_Project1)  
+> 🏷️ **Versi Rilis:** v2.0  
+
 Aplikasi web layanan koperasi desa ini dikembangkan untuk memenuhi tugas Rekayasa Kebutuhan (Project 1). Pengembangan berdasar pada dokumen **PRD SIMKOPDES v2.0** yang merupakan hasil sintesis dan perumusan masalah dari tahapan penelitian Worksheet **WS1, WS2, WS3, WS5, WS6, WS7, dan WS8**.
 
 Fokus utama perbaikan antarmuka dan alur pengguna adalah memberikan kendali yang fleksibel kepada anggota terhadap akun dan data keanggotaannya (pengajuan perpindahan domisili & penghapusan akun) serta menyediakan layanan bantuan **Helpdesk internal terintegrasi di dalam aplikasi** tanpa perlu dialihkan ke aplikasi pihak ketiga (WhatsApp/SMS).
@@ -15,6 +19,70 @@ Berdasarkan analisis awal (WS1) dan Design Challenge (WS2), ditemukan kendala ny
 2. **Alur Helpdesk yang Terputus:** Menu bantuan sebelumnya mengarahkan anggota ke WhatsApp eksternal yang sering memicu kendala peralihan ke SMS saat nomor belum tersimpan.
 3. **Kendala Akses Awal & Login:** Menangani kendala akses membuka aplikasi (U1) dan proses masuk akun (U2) melalui penanganan kegagalan yang ramah non-teknis serta kejelasan validasi input.
 4. **Batasan Ruang Lingkup (Out of Scope PRD v2.0):** Sesuai arahan PRD v2.0, sistem tidak menambahkan modul keuangan/simpan pinjam baru di luar scope dan tidak mengintegrasikan Corporate University / LMS eksternal, agar fokus pengembangan terpusat pada kendali akun dan helpdesk internal.
+
+---
+
+## 📁 Struktur Direktori & Berkas Proyek (Root Files)
+
+Berikut adalah struktur organisasi berkas dan direktori pada repositori proyek:
+
+```text
+RI_Project1/
+├── .env.example                               # Template konfigurasi environment variable Supabase
+├── .gitignore                                 # Pengabaian berkas sensitif & build (node_modules, dist, .env)
+├── index.html                                 # Dokumen HTML utama aplikasi dengan font Plus Jakarta Sans
+├── package.json                               # Konfigurasi dependensi npm dan script eksekusi
+├── package-lock.json                          # Kunci versi dependensi npm
+├── postcss.config.js                          # Konfigurasi preprocessor PostCSS untuk Tailwind
+├── PRD_SIMKOPDES_v1.1.md                      # Dokumen resmi Product Requirements Document (PRD v2.0)
+├── README.md                                  # Dokumentasi utama proyek, live demo, pengujian & changelog
+├── SIMKOPDES_Feature_List_dan_Data_Model.md   # Dokumen pendamping spesifikasi fitur & skema data
+├── tailwind.config.js                         # Konfigurasi warna tematik koperasi & utility Tailwind CSS
+├── vercel.json                                # Konfigurasi rewrite routing SPA untuk deployment Vercel
+├── vite.config.js                             # Konfigurasi compiler Vite & plugin React
+│
+├── src/                                       # Direktori kode sumber utama aplikasi
+│   ├── main.jsx                               # Entry point React DOM & inisialisasi AppProvider
+│   ├── App.jsx                                # Komponen root penyusun layout utama & routing tampilan
+│   ├── index.css                              # Konfigurasi CSS Tailwind & styling animasi transisi
+│   │
+│   ├── context/
+│   │   └── AppContext.jsx                     # State management global (Auth, Domisili, Hapus Akun, Helpdesk)
+│   │
+│   ├── data/
+│   │   └── initialData.js                     # Data inisial realistis KUD Sukamaju (Mock Store & fallback)
+│   │
+│   ├── lib/
+│   │   └── supabase.js                        # Inisialisasi client Supabase JS & pengecekan koneksi
+│   │
+│   └── components/
+│       ├── account/
+│       │   └── AccountSettings.jsx            # Modul Kendali Akun: Pindah Domisili (FR-03) & Hapus Akun (FR-04)
+│       ├── admin/
+│       │   └── PengurusDashboard.jsx          # Ruang Kerja Pengurus: Penanganan Helpdesk, Domisili & Anggota
+│       ├── auth/
+│       │   ├── LoginForm.jsx                  # Formulir login dengan validasi inline & error actionable (FR-02)
+│       │   └── RegisterForm.jsx               # Formulir pendaftaran anggota baru yang ringkas (FR-07)
+│       ├── common/
+│       │   ├── Sidebar.jsx                    # Navigasi samping desktop & drawer navigasi mobile
+│       │   ├── TopNavbar.jsx                  # Bilah atas dengan tombol menu hamburger & indikator status
+│       │   ├── Header.jsx                     # Header pendukung & navigasi publik
+│       │   ├── Footer.jsx                     # Informasi badan hukum & kontak resmi KUD Sukamaju
+│       │   ├── ErrorState.jsx                 # Tampilan ramah non-teknis saat gangguan akses (FR-01)
+│       │   ├── HelpModal.jsx                  # Modal FAQ & petunjuk panduan kontekstual (FR-08)
+│       │   ├── DevToolbar.jsx                 # Panel penguji cepat peran pengguna & simulasi akses
+│       │   ├── LoadingSpinner.jsx             # Indikator loading visual berlogo koperasi
+│       │   └── Toast.jsx                      # Notifikasi toast interaktif
+│       ├── helpdesk/
+│       │   └── HelpdeskInternal.jsx           # Layanan Helpdesk internal & pelacakan status tiket (FR-05, FR-06)
+│       └── member/
+│           ├── MemberDashboard.jsx            # Beranda utama anggota dengan kartu aksi menuju setiap fitur
+│           ├── MemberProfile.jsx              # Tampilan data profil & informasi keanggotaan
+│           └── SavingsHistory.jsx             # Riwayat transaksi simpanan anggota dengan filter
+│
+└── supabase/
+    └── schema.sql                             # DDL SQL: tabel profiles, anggota, domisili, helpdesk, RLS & seed
+```
 
 ---
 
@@ -66,8 +134,8 @@ npm run preview
 
 Aplikasi telah dilengkapi panel pengujian cepat di pojok kiri bawah layar (**Panel Penguji PRD v2.0**) untuk mempermudah simulasi seluruh skenario:
 
-1. **Pengujian Pindah Domisili (FR-03):** Masuk sebagai Budi Santoso (Anggota), buka menu *Kendali Akun & Domisili*, ajukan alamat baru. Beralih ke akun Pak Joko (Pengurus) untuk meninjau dan menyetujui permohonan tersebut.
-2. **Pengujian Pengajuan Hapus Akun (FR-04):** Buka tab *Pengajuan Hapus Akun*, baca poin konsekuensi retensi data kearsipan desa, centang persetujuan konsekuensi, dan kirim permohonan.
+1. **Pengujian Pindah Domisili (FR-03):** Masuk sebagai Budi Santoso (Anggota), buka menu *Pindah Domisili & Koperasi*, ajukan alamat baru. Beralih ke akun Pak Joko (Pengurus) untuk meninjau dan menyetujui permohonan tersebut.
+2. **Pengujian Pengajuan Hapus Akun (FR-04):** Buka menu *Pengajuan Hapus Akun*, baca poin konsekuensi retensi data kearsipan desa, centang persetujuan konsekuensi, dan kirim permohonan.
 3. **Pengujian Helpdesk Internal (FR-05 & FR-06):** Buka menu *Helpdesk Internal*, kirim laporan baru. Beralih ke akun Pengurus untuk memberikan tanggapan/solusi dan memperbarui status tiket (`Sedang Ditangani` atau `Selesai`).
 4. **Pengujian Kegagalan Akses (FR-01):** Klik *Simulasi Server Down* pada panel penguji untuk memeriksa tampilan pesan ramah non-teknis dan tombol pemulihan (*Retry*), lalu klik *Reset ke Normal*.
 5. **Pengujian Audit Log (NFR-02 & NFR-03):** Klik tautan *Lihat Audit Log* pada panel penguji untuk melihat riwayat aktivitas sistem secara real-time tanpa mengekspos data kredensial sensitif.

@@ -193,3 +193,14 @@ create policy "Pengurus dapat melihat audit log"
 
 create policy "Sistem/User dapat menambah audit log"
   on public.audit_log for insert with check (true);
+
+-- ==============================================================
+-- INITIAL SEED DATA (HELP CONTENT & PANDUAN SIMKOPDES)
+-- ==============================================================
+insert into public.help_content (halaman_terkait, judul, konten, urutan_tampil)
+values
+('login', 'Bagaimana cara masuk jika lupa nomor anggota?', 'Anda dapat masuk menggunakan alamat Email yang didaftarkan saat registrasi sebagai pengganti Nomor Anggota.', 1),
+('keanggotaan', 'Bagaimana alur mengajukan perpindahan domisili?', 'Buka menu Kendali Akun, pilih Pindah Domisili. Isi alamat baru dan alasan kepindahan. Riwayat keanggotaan Anda tidak akan hilang.', 2),
+('keanggotaan', 'Bagaimana ketentuan pengajuan penghapusan akun?', 'Pengajuan penghapusan akun dilakukan melalui menu Kendali Akun > Hapus Akun. Pengurus akan meninjau dan menyelesaikan hak simpanan Anda.', 3),
+('helpdesk', 'Bagaimana cara menyampaikan kendala melalui Helpdesk Internal?', 'Pilih menu Helpdesk Internal, klik Kirim Laporan Baru, pilih kategori kendala, dan jelaskan permasalahan Anda langsung di aplikasi.', 4)
+on conflict do nothing;
